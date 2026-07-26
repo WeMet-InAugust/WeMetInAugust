@@ -1,0 +1,17 @@
+{
+  "name": "we-met-in-august",
+  "version": "1.0.0",
+  "description": "A living digital museum exploring humanity through science, art, and history",
+  "main": "index.html",
+  "keywords": [
+    "museum",
+    "education",
+    "art",
+    "science",
+    "history",
+    "philosophy",
+    "interactive"
+  ],
+  "author": "WeMet-InAugust",
+  "license": "MIT"
+}

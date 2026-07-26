@@ -1,0 +1,12 @@
+.gitignore
+node_modules/
+.DS_Store
+*.log
+.env
+.env.local
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+package-lock.json
