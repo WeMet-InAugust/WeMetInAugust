@@ -1,0 +1,477 @@
+/* ============================================================
+   SECTIONS STYLING - ALL CONTENT AREAS
+   ============================================================ */
+
+.content-section {
+    min-height: calc(100vh - 70px);
+    padding: 60px 40px;
+    position: relative;
+    margin-top: 0;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 60px;
+    position: relative;
+    z-index: 2;
+}
+
+.section-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.2rem, 5.5vw, 3.2rem);
+    font-weight: 900;
+    color: #001F54;
+    margin-bottom: 16px;
+    letter-spacing: -1px;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+body.dark-mode .section-header h2 {
+    color: #B0D4FF;
+}
+
+.section-intro {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.15rem;
+    color: #0047AB;
+    max-width: 650px;
+    margin: 0 auto;
+    line-height: 1.8;
+    letter-spacing: 0.3px;
+}
+
+body.dark-mode .section-intro {
+    color: #90CAF9;
+}
+
+.section-header::after {
+    content: '';
+    position: absolute;
+    width: 100px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #0047AB, transparent);
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* ASTRONOMY SECTION */
+.astronomy-section {
+    background: radial-gradient(circle at top right, rgba(0, 71, 171, 0.08) 0%, rgba(255, 255, 255, 0.5) 100%);
+}
+
+body.dark-mode .astronomy-section {
+    background: radial-gradient(circle at top right, rgba(0, 71, 171, 0.15) 0%, rgba(26, 26, 26, 0.5) 100%);
+}
+
+/* HISTORY SECTION */
+.history-section {
+    background: linear-gradient(135deg, rgba(26, 26, 26, 0.08) 0%, rgba(0, 71, 171, 0.08) 100%);
+}
+
+body.dark-mode .history-section {
+    background: linear-gradient(135deg, rgba(26, 26, 26, 0.4) 0%, rgba(0, 71, 171, 0.12) 100%);
+}
+
+.history-section .section-header h2 {
+    font-family: 'EB Garamond', serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* GEOGRAPHY SECTION */
+.geography-section {
+    background: linear-gradient(135deg, rgba(144, 238, 144, 0.06) 0%, rgba(0, 123, 167, 0.06) 100%);
+}
+
+/* NAUTICAL & MARINE SECTION */
+.nautical-section {
+    background: linear-gradient(135deg, rgba(0, 123, 167, 0.12) 0%, rgba(176, 224, 230, 0.12) 100%);
+}
+
+.nautical-section .section-header h2 {
+    color: var(--cerulean);
+}
+
+/* ART SECTION */
+.art-section {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(212, 175, 55, 0.06) 100%);
+}
+
+body.dark-mode .art-section {
+    background: linear-gradient(135deg, rgba(26, 26, 26, 0.8) 0%, rgba(212, 175, 55, 0.1) 100%);
+}
+
+.art-navigation {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 60px;
+}
+
+.art-nav-btn {
+    padding: 12px 24px;
+    background: rgba(0, 71, 171, 0.1);
+    border: 2px solid #0047AB;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Lora', serif;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.art-nav-btn.active {
+    background: linear-gradient(135deg, #0047AB 0%, #001F54 100%);
+    color: white;
+    border-color: #0047AB;
+}
+
+.art-nav-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 71, 171, 0.2);
+}
+
+.art-gallery-collage {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+}
+
+/* CONNECTIONS SECTION */
+.connections-section {
+    background: linear-gradient(135deg, rgba(0, 71, 171, 0.05) 0%, rgba(212, 175, 55, 0.05) 100%);
+}
+
+.connections-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.connection-card {
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid #0047AB;
+    border-radius: 12px;
+    padding: 30px;
+    transition: all 0.3s ease;
+}
+
+body.dark-mode .connection-card {
+    background: rgba(26, 26, 26, 0.9);
+}
+
+.connection-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 50px rgba(0, 71, 171, 0.2);
+}
+
+/* PHILOSOPHY SECTION */
+.philosophy-section.brutalist {
+    background: linear-gradient(135deg, #1A1A1A 0%, #0047AB 100%);
+    color: white;
+}
+
+.brutalist-header h2 {
+    color: white;
+    font-size: 3.5rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 900;
+    text-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.brutalist-header .section-intro {
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.philosophy-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+}
+
+/* VIDEOS SECTION */
+.videos-filter {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+}
+
+.video-filter-btn {
+    padding: 10px 20px;
+    background: rgba(0, 71, 171, 0.1);
+    border: 2px solid #0047AB;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.video-filter-btn.active {
+    background: #0047AB;
+    color: white;
+}
+
+.videos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+/* ARCHIVE SECTION */
+.archive-section.retro-internet {
+    background: linear-gradient(135deg, #F0E68C 0%, #FFFACD 50%, #F0E68C 100%);
+    font-family: 'Courier New', monospace;
+}
+
+.archive-section h2 {
+    font-family: 'Courier New', monospace;
+    color: #333;
+}
+
+.retro-badge {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 20px;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.visitor-counter {
+    background: #FFD700;
+    padding: 8px 16px;
+    border: 2px solid #333;
+    font-weight: bold;
+}
+
+.last-updated {
+    background: #87CEEB;
+    padding: 8px 16px;
+    border: 2px solid #333;
+}
+
+.retro-guestbook {
+    margin-top: 40px;
+    background: rgba(255, 255, 255, 0.8);
+    border: 3px solid #333;
+    padding: 20px;
+}
+
+.guestbook-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.guestbook-form input,
+.guestbook-form textarea {
+    padding: 10px;
+    border: 2px solid #333;
+    font-family: 'Courier New', monospace;
+    background: #FFF;
+}
+
+.guestbook-form button {
+    padding: 10px;
+    background: #FFD700;
+    border: 2px solid #333;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+}
+
+.guestbook-form button:hover {
+    background: #FFA500;
+}
+
+/* ABOUT SECTION */
+.about-section {
+    background: linear-gradient(135deg, rgba(0, 71, 171, 0.05) 0%, rgba(255, 255, 255, 0.5) 100%);
+}
+
+.about-content {
+    max-width: 900px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+    margin-top: 40px;
+}
+
+.about-mission,
+.about-vision,
+.about-team {
+    background: rgba(255, 255, 255, 0.9);
+    border-left: 4px solid #0047AB;
+    padding: 30px;
+    border-radius: 8px;
+}
+
+body.dark-mode .about-mission,
+body.dark-mode .about-vision,
+body.dark-mode .about-team {
+    background: rgba(26, 26, 26, 0.9);
+}
+
+.about-mission h3,
+.about-vision h3,
+.about-team h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    color: #001F54;
+    margin-bottom: 15px;
+}
+
+body.dark-mode .about-mission h3,
+body.dark-mode .about-vision h3,
+body.dark-mode .about-team h3 {
+    color: #B0D4FF;
+}
+
+/* CONTACT SECTION */
+.contact-section {
+    background: linear-gradient(135deg, rgba(0, 71, 171, 0.08) 0%, rgba(255, 255, 255, 0.5) 100%);
+}
+
+.contact-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    max-width: 1000px;
+    margin: 40px auto;
+}
+
+.contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.contact-form input,
+.contact-form textarea {
+    padding: 16px;
+    border: 2px solid #0047AB;
+    border-radius: 8px;
+    font-family: 'Lora', serif;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+    outline: none;
+    border-color: #001F54;
+    box-shadow: 0 0 0 3px rgba(0, 71, 171, 0.1);
+}
+
+.contact-form button {
+    padding: 16px;
+    background: linear-gradient(135deg, #0047AB 0%, #001F54 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.contact-form button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 71, 171, 0.3);
+}
+
+.contact-info h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    color: #001F54;
+    margin-bottom: 20px;
+}
+
+body.dark-mode .contact-info h3 {
+    color: #B0D4FF;
+}
+
+.social-links {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.social-link {
+    padding: 12px 20px;
+    background: rgba(0, 71, 171, 0.2);
+    color: #0047AB;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.social-link:hover {
+    background: #0047AB;
+    color: white;
+}
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 1024px) {
+    .content-section {
+        padding: 50px 30px;
+    }
+
+    .contact-content {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+
+    .art-gallery-collage,
+    .connections-grid,
+    .videos-grid,
+    .philosophy-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .content-section {
+        padding: 40px 20px;
+        min-height: auto;
+    }
+
+    .section-header h2 {
+        font-size: 2rem;
+    }
+
+    .art-navigation {
+        gap: 8px;
+    }
+
+    .art-nav-btn {
+        padding: 10px 16px;
+        font-size: 0.85rem;
+    }
+
+    .about-content {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .content-section {
+        padding: 30px 16px;
+    }
+
+    .section-header h2 {
+        font-size: 1.6rem;
+    }
+
+    .section-intro {
+        font-size: 1rem;
+    }
+}

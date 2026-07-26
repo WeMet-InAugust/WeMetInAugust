@@ -1,0 +1,166 @@
+/* ============================================================
+   SEASONAL ATMOSPHERE SYSTEM STYLES
+   ============================================================ */
+
+/* WINTER ATMOSPHERE */
+body.season-winter {
+    --primary-accent: #C0C0C0;
+    --secondary-accent: #B0E0E6;
+}
+
+body.season-winter .home-newsletter {
+    background: linear-gradient(135deg, #001F54 0%, #191970 50%, #0047AB 100%);
+}
+
+/* WINTER FROST PHASE */
+body.season-winter-frost {
+    --primary-accent: #E8F4FF;
+    --secondary-accent: #C0D8F0;
+}
+
+/* WINTER ROMANCE PHASE */
+body.season-winter-romance {
+    --primary-accent: #FFB6D9;
+    --secondary-accent: #FFE4F0;
+}
+
+/* SPRING ATMOSPHERE */
+body.season-spring {
+    --primary-accent: #90EE90;
+    --secondary-accent: #FFB6D9;
+}
+
+body.season-spring .featured-item {
+    border-color: #228B22;
+}
+
+/* SPRING TRANSITION */
+body.season-spring-transition {
+    --primary-accent: #B0E0E6;
+    --secondary-accent: #FFB6D9;
+}
+
+/* SUMMER ATMOSPHERE */
+body.season-summer {
+    --primary-accent: #FFD700;
+    --secondary-accent: #87CEEB;
+}
+
+body.season-summer .home-newsletter {
+    background: linear-gradient(135deg, #0047AB 0%, #4169E1 50%, #00008B 100%);
+}
+
+/* SUMMER LATE PHASE */
+body.season-summer-late {
+    --primary-accent: #FFA500;
+    --secondary-accent: #FFD700;
+}
+
+/* AUTUMN ATMOSPHERE */
+body.season-autumn {
+    --primary-accent: #D4AF37;
+    --secondary-accent: #8B4513;
+}
+
+body.season-autumn .featured-item {
+    border-color: #D4AF37;
+}
+
+/* CHRISTMAS SEASON */
+body.season-christmas {
+    --primary-accent: #DC143C;
+    --secondary-accent: #228B22;
+}
+
+body.season-christmas .featured-item {
+    border-color: #DC143C;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 248, 255, 0.98) 100%);
+}
+
+body.season-christmas .featured-item::before,
+body.season-christmas .featured-item::after {
+    border-color: rgba(220, 20, 60, 0.3);
+}
+
+/* DECORATIVE ELEMENTS */
+.seasonal-decoration {
+    position: absolute;
+    opacity: 0.1;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.snowflake {
+    position: absolute;
+    animation: snowfall 10s linear infinite;
+}
+
+@keyframes snowfall {
+    from {
+        top: -10px;
+        opacity: 1;
+    }
+    to {
+        top: 100vh;
+        opacity: 0;
+    }
+}
+
+.leaf {
+    position: absolute;
+    animation: leaffall 8s linear infinite;
+}
+
+@keyframes leaffall {
+    from {
+        top: -10px;
+        opacity: 1;
+        transform: rotateZ(0deg);
+    }
+    to {
+        top: 100vh;
+        opacity: 0;
+        transform: rotateZ(360deg);
+    }
+}
+
+.blossom {
+    position: absolute;
+    animation: blossomfall 12s linear infinite;
+}
+
+@keyframes blossomfall {
+    from {
+        top: -10px;
+        opacity: 1;
+    }
+    to {
+        top: 100vh;
+        opacity: 0;
+    }
+}
+
+/* SEASONAL COLOR TRANSITIONS */
+.transition-colors {
+    transition: background-color 0.5s ease, border-color 0.5s ease, color 0.5s ease;
+}
+
+/* SEASONAL BADGE */
+.seasonal-badge {
+    position: fixed;
+    top: 90px;
+    right: 30px;
+    background: linear-gradient(135deg, rgba(0, 71, 171, 0.9) 0%, rgba(0, 31, 84, 0.9) 100%);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    z-index: 85;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+body.dark-mode .seasonal-badge {
+    background: linear-gradient(135deg, rgba(0, 80, 255, 0.9) 0%, rgba(65, 105, 225, 0.9) 100%);
+}
