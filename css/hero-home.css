@@ -97,7 +97,6 @@ body.dark-mode .hero-landing {
 .hero-stripe:nth-child(59) { background: linear-gradient(180deg, #00008B 0%, #000080 100%); }
 .hero-stripe:nth-child(60) { background: linear-gradient(180deg, #000080 0%, #0A0E27 100%); }
 
-/* SUBTLE DECORATIVE PATTERN FOR BAROQUE EFFECT */
 .hero-stripe::before {
     content: '';
     position: absolute;
@@ -109,7 +108,6 @@ body.dark-mode .hero-landing {
     opacity: 0.5;
 }
 
-/* ANIMATION FOR STRIPE MOVEMENT */
 .hero-stripe {
     animation: stripeFlow 20s ease-in-out infinite;
 }
@@ -125,10 +123,7 @@ body.dark-mode .hero-landing {
     }
 }
 
-/* ============================================================
-   HERO SYMBOLS LAYER - 30+ PIXELATED ?! SYMBOLS (SCATTERED)
-   ============================================================ */
-
+/* HERO SYMBOLS */
 .hero-symbols-layer {
     position: absolute;
     top: 0;
@@ -143,39 +138,18 @@ body.dark-mode .hero-landing {
     position: absolute;
     font-family: 'Playfair Display', serif;
     font-weight: 900;
-    text-shadow: 
-        2px 2px 0px rgba(0, 0, 0, 0.15),
-        -2px -2px 0px rgba(255, 255, 255, 0.3);
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.15), -2px -2px 0px rgba(255, 255, 255, 0.3);
     animation: symbolFloat 6s ease-in-out infinite;
     color: rgba(255, 255, 255, 0.5);
     letter-spacing: 2px;
 }
 
 @keyframes symbolFloat {
-    0%, 100% { 
-        transform: translateY(0) rotate(0deg) scale(1);
-        opacity: 0.4;
-    }
-    50% { 
-        transform: translateY(-25px) rotate(2deg) scale(1.05);
-        opacity: 0.65;
-    }
+    0%, 100% { transform: translateY(0) rotate(0deg) scale(1); opacity: 0.4; }
+    50% { transform: translateY(-25px) rotate(2deg) scale(1.05); opacity: 0.65; }
 }
 
-.hero-symbol:nth-child(odd) {
-    font-size: 1.5rem;
-    animation-delay: 0s;
-}
-
-.hero-symbol:nth-child(even) {
-    font-size: 2rem;
-    animation-delay: -2s;
-}
-
-/* ============================================================
-   HERO CONTENT - BAROQUE + NEO-CLASSICAL COMPOSITION
-   ============================================================ */
-
+/* HERO CONTENT */
 .hero-content-wrapper {
     position: relative;
     z-index: 5;
@@ -189,14 +163,13 @@ body.dark-mode .hero-landing {
     border-radius: 16px;
 }
 
-/* BAROQUE DECORATIVE ELEMENTS */
 .hero-content-wrapper::before,
 .hero-content-wrapper::after {
     content: '';
     position: absolute;
     width: 200px;
     height: 2px;
-    background: linear-gradient(90deg, transparent, var(--blue-8), transparent);
+    background: linear-gradient(90deg, transparent, #0047AB, transparent);
     top: -40px;
 }
 
@@ -212,13 +185,12 @@ body.dark-mode .hero-landing {
     position: relative;
 }
 
-/* BAROQUE ORNAMENT FRAME AROUND LOGO */
 .hero-logo-container::before {
     content: '';
     position: absolute;
     width: 140px;
     height: 140px;
-    border: 3px solid var(--blue-8);
+    border: 3px solid #0047AB;
     border-radius: 50%;
     opacity: 0.3;
     animation: rotateOrnament 20s linear infinite;
@@ -229,7 +201,7 @@ body.dark-mode .hero-landing {
     position: absolute;
     width: 160px;
     height: 160px;
-    border: 2px solid var(--blue-6);
+    border: 2px solid #0080FF;
     border-radius: 50%;
     opacity: 0.2;
     animation: rotateOrnament 30s linear infinite reverse;
@@ -259,7 +231,6 @@ body.dark-mode .hero-landing {
     50% { filter: drop-shadow(0 20px 50px rgba(0, 71, 171, 0.4)); }
 }
 
-/* NEO-CLASSICAL TYPOGRAPHY */
 .hero-title {
     font-family: 'Playfair Display', serif;
     font-size: clamp(3.5rem, 9vw, 5.5rem);
@@ -298,7 +269,6 @@ body.dark-mode .hero-subtitle {
     text-shadow: 0 2px 8px rgba(255, 255, 255, 0.05);
 }
 
-/* SCROLL INDICATOR WITH BAROQUE STYLING */
 .scroll-indicator {
     display: flex;
     flex-direction: column;
@@ -333,10 +303,6 @@ body.dark-mode .hero-subtitle {
     50% { filter: drop-shadow(0 0 8px rgba(0, 71, 171, 0.5)); }
 }
 
-/* ============================================================
-   FRANCE AOI CORNER IDLE - POSITIONED TOP-RIGHT WITH BAROQUE FRAME
-   ============================================================ */
-
 .france-aoi-corner-idle {
     position: absolute;
     top: 40px;
@@ -344,9 +310,7 @@ body.dark-mode .hero-subtitle {
     z-index: 10;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 
-        0 15px 50px rgba(0, 71, 171, 0.25),
-        inset 0 0 0 2px rgba(255, 255, 255, 0.5);
+    box-shadow: 0 15px 50px rgba(0, 71, 171, 0.25), inset 0 0 0 2px rgba(255, 255, 255, 0.5);
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(224, 240, 255, 0.95) 100%);
     border: 3px solid #0047AB;
     backdrop-filter: blur(10px);
@@ -354,26 +318,15 @@ body.dark-mode .hero-subtitle {
 }
 
 @keyframes cornerPulse {
-    0%, 100% { 
-        box-shadow: 
-            0 15px 50px rgba(0, 71, 171, 0.25),
-            inset 0 0 0 2px rgba(255, 255, 255, 0.5);
-    }
-    50% { 
-        box-shadow: 
-            0 20px 60px rgba(0, 71, 171, 0.35),
-            inset 0 0 0 2px rgba(255, 255, 255, 0.7);
-    }
+    0%, 100% { box-shadow: 0 15px 50px rgba(0, 71, 171, 0.25), inset 0 0 0 2px rgba(255, 255, 255, 0.5); }
+    50% { box-shadow: 0 20px 60px rgba(0, 71, 171, 0.35), inset 0 0 0 2px rgba(255, 255, 255, 0.7); }
 }
 
 body.dark-mode .france-aoi-corner-idle {
     background: linear-gradient(135deg, rgba(26, 26, 26, 0.95) 0%, rgba(42, 60, 100, 0.95) 100%);
 }
 
-/* ============================================================
-   HOME PAGE - BAROQUE + NEO-CLASSICAL + DARK ACADEMIA
-   ============================================================ */
-
+/* HOME SECTION */
 .home-section {
     margin-top: 70px;
     min-height: calc(100vh - 70px);
@@ -386,7 +339,6 @@ body.dark-mode .home-section {
     background: linear-gradient(135deg, #0A0E27 0%, #12182F 50%, #0F1428 100%);
 }
 
-/* BAROQUE DECORATIVE BACKGROUND PATTERN */
 .home-section::before {
     content: '';
     position: fixed;
@@ -394,8 +346,7 @@ body.dark-mode .home-section {
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: 
-        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><defs><pattern id="baroque" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="rgba(0,71,171,0.05)"/><path d="M 30 50 Q 50 30 70 50 T 110 50" stroke="rgba(0,71,171,0.03)" fill="none"/></pattern></defs><rect width="200" height="200" fill="url(%23baroque)"/></svg>');
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><defs><pattern id="baroque" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="rgba(0,71,171,0.05)"/><path d="M 30 50 Q 50 30 70 50 T 110 50" stroke="rgba(0,71,171,0.03)" fill="none"/></pattern></defs><rect width="200" height="200" fill="url(%23baroque)"/></svg>');
     pointer-events: none;
     z-index: 0;
     opacity: 0.5;
@@ -422,7 +373,6 @@ body.dark-mode .home-hero-backdrop {
     background: linear-gradient(135deg, rgba(0, 71, 171, 0.2) 0%, rgba(41, 128, 185, 0.12) 50%, rgba(25, 25, 112, 0.12) 100%);
 }
 
-/* NEO-CLASSICAL DECORATION FOR BACKDROP */
 .home-hero-backdrop::before,
 .home-hero-backdrop::after {
     content: '';
@@ -477,7 +427,6 @@ body.dark-mode .home-subtitle {
     color: #90CAF9;
 }
 
-/* FEATURED GRID WITH BAROQUE CARDS */
 .home-featured-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -501,7 +450,6 @@ body.dark-mode .featured-item {
     border-color: #0080FF;
 }
 
-/* BAROQUE CORNER ORNAMENTS */
 .featured-item::before,
 .featured-item::after {
     content: '';
@@ -572,7 +520,6 @@ body.dark-mode .featured-list li {
     opacity: 0.8;
 }
 
-/* QUOTE STYLING - NEO-CLASSICAL */
 .quote-of-week blockquote {
     font-family: 'Cormorant Garamond', serif;
     font-size: 1.2rem;
@@ -599,7 +546,6 @@ body.dark-mode .quote-of-week blockquote {
     font-family: 'Playfair Display', serif;
 }
 
-/* NEWSLETTER SECTION - BAROQUE FLOURISH */
 .home-newsletter {
     background: linear-gradient(135deg, #0047AB 0%, #001F54 50%, #191970 100%);
     border-radius: 16px;
@@ -618,8 +564,7 @@ body.dark-mode .quote-of-week blockquote {
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: 
-        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><defs><pattern id="baroque-gold" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M 25 0 Q 25 12 12 12 Q 25 12 25 25 Q 25 12 38 12 Q 25 12 25 0 M 25 25 Q 25 37 12 37 Q 25 37 25 50 Q 25 37 38 37 Q 25 37 25 25" stroke="rgba(255,255,255,0.1)" fill="none"/></pattern></defs><rect width="100" height="100" fill="url(%23baroque-gold)"/></svg>');
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><defs><pattern id="baroque-gold" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M 25 0 Q 25 12 12 12 Q 25 12 25 25 Q 25 12 38 12 Q 25 12 25 0 M 25 25 Q 25 37 12 37 Q 25 37 25 50 Q 25 37 38 37 Q 25 37 25 25" stroke="rgba(255,255,255,0.1)" fill="none"/></pattern></defs><rect width="100" height="100" fill="url(%23baroque-gold)"/></svg>');
     opacity: 0.4;
     pointer-events: none;
 }
@@ -680,88 +625,14 @@ body.dark-mode .quote-of-week blockquote {
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
 }
 
-/* ============================================================
-   SECTION HEADERS - DARK ACADEMIA AESTHETIC
-   ============================================================ */
-
-.section-header {
-    text-align: center;
-    margin-bottom: var(--space-2xl);
-    position: relative;
-    padding-bottom: var(--space-lg);
-}
-
-.section-header h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(2.2rem, 5.5vw, 3.2rem);
-    font-weight: 900;
-    color: #001F54;
-    margin-bottom: var(--space-md);
-    letter-spacing: -1px;
-    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-body.dark-mode .section-header h2 {
-    color: #B0D4FF;
-    text-shadow: 0 4px 12px rgba(255, 255, 255, 0.08);
-}
-
-.section-intro {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.15rem;
-    color: #0047AB;
-    max-width: 650px;
-    margin: 0 auto;
-    line-height: 1.8;
-    letter-spacing: 0.3px;
-}
-
-body.dark-mode .section-intro {
-    color: #90CAF9;
-}
-
-/* DECORATIVE LINE UNDER SECTION HEADERS */
-.section-header::after {
-    content: '';
-    position: absolute;
-    width: 100px;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, #0047AB, transparent);
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-/* ============================================================
-   RESPONSIVE MOBILE BAROQUE ADJUSTMENTS
-   ============================================================ */
-
 @media (max-width: 768px) {
-    .hero-landing {
-        min-height: 85vh;
-    }
-    
-    .hero-stripes-container {
-        opacity: 0.9;
-    }
-    
     .france-aoi-corner-idle {
         top: 20px;
         right: 20px;
         width: 180px;
         height: 220px;
     }
-    
-    .hero-content-wrapper::before,
-    .hero-content-wrapper::after {
-        width: 120px;
-    }
-    
     .home-featured-grid {
         grid-template-columns: 1fr;
-    }
-    
-    .featured-item {
-        padding: var(--space-md);
     }
 }
