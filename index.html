@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="We Met In August?! - A living digital museum exploring humanity through science, art, and history">
+    <meta name="theme-color" content="#0047AB">
+    <title>We Met In August?! — Exploring Humanity Through Science, Art & History</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/hero-home.css">
+    <link rel="stylesheet" href="css/seasonal.css">
+    <link rel="stylesheet" href="css/france-aoi.css">
+    <link rel="stylesheet" href="css/sections.css">
+    <link rel="stylesheet" href="css/admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Cormorant+Garamond:wght@400;700&family=EB+Garamond:wght@400;700&family=Inter:wght@300;400;500;600;700&family=Source+Sans+Pro:wght@400;600;700&family=Lora:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <section id="hero" class="hero-landing">
+        <div class="hero-stripes-container" id="heroStripesContainer"></div>
+        <div class="hero-symbols-layer" id="heroSymbolsLayer"></div>
+        <div class="hero-content-wrapper">
+            <div class="hero-logo-container">
+                <svg class="hero-logo-16bit" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <style>.pixel { fill: #FFFFFF; stroke: #000000; stroke-width: 0.5; }</style>
+                    </defs>
+                    <g id="question-mark">
+                        <rect class="pixel" x="25" y="15" width="5" height="5"/>
+                        <rect class="pixel" x="30" y="15" width="5" height="5"/>
+                        <rect class="pixel" x="35" y="15" width="5" height="5"/>
+                        <rect class="pixel" x="40" y="10" width="5" height="10"/>
+                        <rect class="pixel" x="35" y="20" width="5" height="5"/>
+                        <rect class="pixel" x="30" y="25" width="5" height="5"/>
+                        <rect class="pixel" x="35" y="30" width="5" height="5"/>
+                        <rect class="pixel" x="35" y="40" width="5" height="5"/>
+                    </g>
+                    <g id="exclamation-mark">
+                        <rect class="pixel" x="55" y="10" width="5" height="30"/>
+                        <rect class="pixel" x="55" y="45" width="5" height="5"/>
+                    </g>
+                </svg>
+            </div>
+            <h1 class="hero-title">We Met In August?!</h1>
+            <p class="hero-subtitle">Exploring how humanity has understood the universe and our place within it through science, history, and artistic expression</p>
+            <div class="scroll-indicator">
+                <span class="scroll-text">Scroll to enter</span>
+                <div class="scroll-arrow">↓</div>
+            </div>
+        </div>
+        <div class="france-aoi-corner-idle" id="franceAoiCornerIdle">
+            <canvas id="seasonalIdleCanvas" width="220" height="280"></canvas>
+        </div>
+    </section>
+
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <span class="nav-logo">?!</span>
+                <span class="nav-title">We Met In August</span>
+            </div>
+            <button class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#home" class="nav-link">Home</a></li>
+                <li><a href="#astronomy" class="nav-link">Astronomy</a></li>
+                <li><a href="#history" class="nav-link">History</a></li>
+                <li><a href="#geography" class="nav-link">Geography</a></li>
+                <li><a href="#nautical" class="nav-link">Nautical & Marine</a></li>
+                <li><a href="#art" class="nav-link">Art</a></li>
+                <li><a href="#philosophy" class="nav-link">Philosophy</a></li>
+                <li><a href="#videos" class="nav-link">Videos</a></li>
+                <li><a href="#interviews" class="nav-link">Interviews</a></li>
+                <li><a href="#archive" class="nav-link">Special Archive</a></li>
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+            </ul>
+            <div class="nav-controls">
+                <button class="theme-toggle" id="themeToggle" title="Dark/Light Mode">◑</button>
+                <button class="seasonal-menu" id="seasonalMenuBtn" title="Seasonal Atmospheres">✿</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="france-aoi-tab" id="franceAoiTab" draggable="true">
+        <div class="tab-anime-container">
+            <canvas id="franceAoiTabCanvas" width="64" height="64"></canvas>
+        </div>
+        <div class="tab-label">France Aoi</div>
+        <button class="tab-close" id="tabClose">✕</button>
+    </div>
+
+    <div class="france-aoi-chat-interface hidden" id="franceAoiInterface">
+        <div class="aoi-header">
+            <div class="aoi-header-content">
+                <div class="aoi-header-anime">
+                    <canvas id="franceAoiHeaderCanvas" width="48" height="48"></canvas>
+                </div>
+                <h3>France Aoi</h3>
+            </div>
+            <button class="aoi-close" id="aoiClose">✕</button>
+        </div>
+        <div class="aoi-chat-messages" id="aoiChatMessages"></div>
+        <div class="aoi-input-area">
+            <input type="text" id="aoiInput" placeholder="Ask about science, art, history..." class="aoi-input" autocomplete="off">
+            <button id="aoiSend" class="aoi-send">→</button>
+        </div>
+    </div>
+
+    <div class="music-player" id="musicPlayer">
+        <div class="player-header">
+            <h4>Seasonal Soundtrack</h4>
+            <button class="player-minimize" id="playerMinimize">−</button>
+        </div>
+        <audio id="audioPlayer" crossorigin="anonymous"></audio>
+        <div class="player-controls">
+            <button id="playPauseBtn" class="play-btn">▶</button>
+            <div class="player-progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+        <div class="player-info" id="playerInfo">
+            <p class="track-title">Loading...</p>
+            <p class="track-artist">Initializing seasonal atmosphere</p>
+        </div>
+    </div>
+
+    <div class="movie-miniplayer" id="movieMiniplayer">
+        <div class="miniplayer-header">
+            <span class="miniplayer-title">Now Playing</span>
+            <button class="miniplayer-minimize" id="miniplayerMinimize">−</button>
+            <button class="miniplayer-close" id="miniplayerClose">✕</button>
+        </div>
+        <div class="miniplayer-video-container" id="miniplayerContainer">
+            <div class="miniplayer-loading">Loading video...</div>
+        </div>
+        <div class="miniplayer-controls">
+            <div class="source-tabs" id="sourceTabsContainer">
+                <button class="source-tab active" data-source="0">Player 1</button>
+                <button class="source-tab" data-source="1">Player 2</button>
+                <button class="source-tab" data-source="2">Player 3</button>
+                <button class="source-tab" data-source="3">Player 4</button>
+            </div>
+            <div class="miniplayer-button-controls">
+                <button id="miniplayerPlayPause" class="miniplayer-btn">▶</button>
+                <div class="miniplayer-progress">
+                    <div class="miniplayer-progress-bar" id="miniplayerProgressBar"></div>
+                </div>
+                <button id="miniplayerMute" class="miniplayer-btn">🔊</button>
+                <button id="miniplayerFullscreen" class="miniplayer-btn">⛶</button>
+            </div>
+        </div>
+    </div>
+
+    <section id="home" class="home-section">
+        <div class="home-hero-content">
+            <div class="home-hero-backdrop"></div>
+            <div class="home-hero-text">
+                <h2 class="home-title">A Living Digital Museum</h2>
+                <p class="home-subtitle">Where science, history, and art reveal how humanity has understood itself, the universe, beauty, and culture through centuries of discovery and creativity.</p>
+            </div>
+            <div class="home-featured-grid">
+                <div class="featured-item featured-articles">
+                    <h3>Featured Articles</h3>
+                    <div class="featured-list" id="featuredArticles"></div>
+                </div>
+                <div class="featured-item featured-videos">
+                    <h3>Featured Videos</h3>
+                    <div class="featured-list" id="featuredVideos"></div>
+                </div>
+                <div class="featured-item featured-interviews">
+                    <h3>Featured Interviews</h3>
+                    <div class="featured-list" id="featuredInterviews"></div>
+                </div>
+                <div class="featured-item quote-of-week">
+                    <h3>Reflection of the Week</h3>
+                    <blockquote id="weeklyQuote">"We are a way for the cosmos to know itself." — Carl Sagan</blockquote>
+                </div>
+            </div>
+            <div class="home-newsletter">
+                <h3>Stay Connected</h3>
+                <p>Receive curated articles, discoveries, and reflections directly to your inbox.</p>
+                <form class="newsletter-form" id="newsletterForm">
+                    <input type="email" placeholder="your@email.com" required>
+                    <button type="submit">Subscribe</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <section id="astronomy" class="content-section astronomy-section">
+        <div class="section-header">
+            <h2>Astronomy & Astrophysics</h2>
+            <p class="section-intro">Exploring the cosmos, distant galaxies, and humanity's quest to understand the universe.</p>
+        </div>
+        <div class="section-content">
+            <div class="articles-grid" id="astronomyGrid"></div>
+        </div>
+    </section>
+
+    <section id="history" class="content-section history-section">
+        <div class="section-header dark-academia">
+            <h2>History</h2>
+            <p class="section-intro">Understanding the threads of civilizations, revolutions, and the evolution of human thought.</p>
+        </div>
+        <div class="section-content">
+            <div class="articles-grid" id="historyGrid"></div>
+        </div>
+    </section>
+
+    <section id="geography" class="content-section geography-section">
+        <div class="section-header">
+            <h2>Geography</h2>
+            <p class="section-intro">Celebrating Earth's breathtaking landscapes, cultures, and the stories written across continents.</p>
+        </div>
+        <div class="section-content">
+            <div class="articles-grid" id="geographyGrid"></div>
+        </div>
+    </section>
+
+    <section id="nautical" class="content-section nautical-section">
+        <div class="section-header maritime">
+            <h2>Nautical & Marine</h2>
+            <p class="section-intro">Exploring oceans, seas, maritime history, and the wonders of the deep.</p>
+        </div>
+        <div class="section-content">
+            <div class="articles-grid" id="nauticalGrid"></div>
+        </div>
+    </section>
+
+    <section id="art" class="content-section art-section">
+        <div class="section-header gallery">
+            <h2>Art & Culture</h2>
+            <p class="section-intro">Where creativity, beauty, and human expression transcend time and medium.</p>
+        </div>
+        <div class="art-navigation">
+            <button class="art-nav-btn active" data-art-category="painting">Painting</button>
+            <button class="art-nav-btn" data-art-category="film">Film</button>
+            <button class="art-nav-btn" data-art-category="literature">Literature</button>
+            <button class="art-nav-btn" data-art-category="music">Music</button>
+            <button class="art-nav-btn" data-art-category="fashion">Fashion</button>
+            <button class="art-nav-btn" data-art-category="architecture">Architecture</button>
+            <button class="art-nav-btn" data-art-category="photography">Photography</button>
+        </div>
+        <div class="section-content">
+            <div class="art-gallery-collage" id="artGallery"></div>
+        </div>
+    </section>
+
+    <section id="connections" class="content-section connections-section">
+        <div class="section-header">
+            <h2>Creative Connections</h2>
+            <p class="section-intro">Discover unexpected threads linking science, art, history, and philosophy across disciplines.</p>
+        </div>
+        <div class="connections-grid" id="connectionsGrid"></div>
+    </section>
+
+    <section id="philosophy" class="content-section philosophy-section brutalist">
+        <div class="section-header brutalist-header">
+            <h2>PHILOSOPHY</h2>
+            <p class="section-intro">EXAMINING MEANING. CONSCIOUSNESS. KNOWLEDGE. BEAUTY. HUMAN NATURE.</p>
+        </div>
+        <div class="section-content">
+            <div class="philosophy-grid" id="philosophyGrid"></div>
+        </div>
+    </section>
+
+    <section id="videos" class="content-section videos-section">
+        <div class="section-header documentary">
+            <h2>Videos & Documentaries</h2>
+            <p class="section-intro">Visual storytelling that brings discoveries, art, and history to life.</p>
+        </div>
+        <div class="videos-filter">
+            <button class="video-filter-btn active" data-filter="all">All</button>
+            <button class="video-filter-btn" data-filter="astronomy">Astronomy</button>
+            <button class="video-filter-btn" data-filter="history">History</button>
+            <button class="video-filter-btn" data-filter="art">Art</button>
+            <button class="video-filter-btn" data-filter="science">Science</button>
+        </div>
+        <div class="section-content">
+            <div class="videos-grid" id="videosGrid"></div>
+        </div>
+    </section>
+
+    <section id="interviews" class="content-section interviews-section">
+        <div class="section-header editorial">
+            <h2>Interviews</h2>
+            <p class="section-intro">Conversations with brilliant minds exploring science, art, history, and the human experience.</p>
+        </div>
+        <div class="section-content">
+            <div class="interviews-grid" id="interviewsGrid"></div>
+        </div>
+    </section>
+
+    <section id="archive" class="content-section archive-section retro-internet">
+        <div class="section-header retro">
+            <h2>❋ WHAT WE USED TO THINK ❋</h2>
+            <p class="section-intro">A forgotten corner of the digital realm exploring obsolete theories, ancient cosmologies, and the fascinating evolution of human understanding.</p>
+            <div class="retro-badge">
+                <span class="visitor-counter">Visitors: <span id="visitorCount">0000001</span></span>
+                <span class="last-updated">Last Updated: 2026/07/26</span>
+            </div>
+        </div>
+        <div class="section-content retro-content">
+            <div class="archive-grid" id="archiveGrid"></div>
+            <div class="retro-guestbook">
+                <h3>✦ GUESTBOOK ✦</h3>
+                <form id="guestbookForm" class="guestbook-form">
+                    <input type="text" placeholder="Your name" required>
+                    <textarea placeholder="Your thoughts..." required></textarea>
+                    <button type="submit">Sign Guestbook</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="content-section about-section">
+        <div class="section-header warm">
+            <h2>About We Met In August?!</h2>
+            <p class="section-intro">Our mission, vision, and the story behind this digital museum.</p>
+        </div>
+        <div class="about-content">
+            <div class="about-mission">
+                <h3>Our Mission</h3>
+                <p>To create a space where humanity's greatest discoveries, artistic achievements, and philosophical insights are celebrated and explored together.</p>
+            </div>
+            <div class="about-vision">
+                <h3>Our Vision</h3>
+                <p>A living, breathing digital museum that grows with its community—a place of comfort, beauty, and intellectual curiosity.</p>
+            </div>
+            <div class="about-team">
+                <h3>Behind the Project</h3>
+                <p>We Met In August?! was created as a labor of love, inspired by the belief that understanding ourselves requires exploring the beauty of our past, the wonder of our universe, and the infinite creativity of human expression.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="content-section contact-section">
+        <div class="section-header minimalist">
+            <h2>Connect With Us</h2>
+            <p class="section-intro">Share your thoughts, questions, or contributions.</p>
+        </div>
+        <div class="contact-content">
+            <form id="contactForm" class="contact-form">
+                <input type="text" placeholder="Your Name" required>
+                <input type="email" placeholder="Your Email" required>
+                <textarea placeholder="Your Message" rows="6" required></textarea>
+                <button type="submit">Send</button>
+            </form>
+            <div class="contact-info">
+                <h3>Direct Contact</h3>
+                <p>Email: hello@wemetinaugust.com</p>
+                <div class="social-links">
+                    <a href="#" class="social-link">Instagram</a>
+                    <a href="#" class="social-link">Twitter</a>
+                    <a href="#" class="social-link">Discord</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>We Met In August?!</h4>
+                <p>A digital museum exploring humanity's greatest discoveries and artistic achievements.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#astronomy">Astronomy</a></li>
+                    <li><a href="#art">Art</a></li>
+                    <li><a href="#philosophy">Philosophy</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Connect</h4>
+                <ul>
+                    <li><a href="#">Instagram</a></li>
+                    <li><a href="#">Twitter</a></li>
+                    <li><a href="#">Discord</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="#">RSS Feed</a></li>
+                    <li><a href="#">Newsletter</a></li>
+                    <li><a href="#">Archive</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 We Met In August?! All rights reserved.</p>
+            <p class="footer-quote">"We are a way for the cosmos to know itself." — Carl Sagan</p>
+        </div>
+    </footer>
+
+    <div class="admin-dashboard-container hidden" id="adminDashboard"></div>
+
+    <script src="js/main.js"></script>
+    <script src="js/hero-generation.js"></script>
+    <script src="js/france-aoi-character.js"></script>
+    <script src="js/france-aoi-chat.js"></script>
+    <script src="js/seasonal-system.js"></script>
+    <script src="js/music-player.js"></script>
+    <script src="js/movie-player.js"></script>
+    <script src="js/content-loader.js"></script>
+    <script src="js/admin-dashboard.js"></script>
+</body>
+</html>
