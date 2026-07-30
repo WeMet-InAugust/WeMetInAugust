@@ -5,7 +5,8 @@
 // - Falls back to embed URL (data-embed) if no direct sources
 // - Loads hls.js on demand from CDN when needed
 // - Adds accessible keyboard controls and captions support (auto-attaches <track> when provided)
-// - Adds basic error UI, retry/backoff, seek-on-progress click, and a lightweight health/status indicator
+// - Adds basic error UI, retry/backoff, seek-on-progress, a lightweight health/status indicator
+// - Adds a "Try alternate source" control to quickly switch to another available source
 
 (function(){
   'use strict';
@@ -22,6 +23,15 @@
   // create a small status node for messages
   let statusNode = document.getElementById('miniplayerStatus');
   if(!statusNode){ statusNode = document.createElement('div'); statusNode.id = 'miniplayerStatus'; statusNode.style.fontSize='0.9rem'; statusNode.style.color='rgba(6,12,30,0.6)'; statusNode.style.marginTop='8px'; container.parentNode.insertBefore(statusNode, container.nextSibling); }
+
+  // add alternate source button area
+  let controlsArea = document.getElementById('miniplayerExtraControls');
+  if(!controlsArea){ controlsArea = document.createElement('div'); controlsArea.id = 'miniplayerExtraControls'; controlsArea.style.display = 'flex'; controlsArea.style.gap = '8px'; controlsArea.style.marginTop = '6px'; container.parentNode.insertBefore(controlsArea, statusNode.nextSibling); }
+
+  let tryAltBtn = document.getElementById('tryAlternateSourceBtn');
+  let openSourceBtn = document.getElementById('openSourceBtn');
+  if(!tryAltBtn){ tryAltBtn = document.createElement('button'); tryAltBtn.id = 'tryAlternateSourceBtn'; tryAltBtn.className = 'miniplayer-btn'; tryAltBtn.textContent = 'Try alternate source'; tryAltBtn.title = 'Cycle to the next available source'; controlsArea.appendChild(tryAltBtn); }
+  if(!openSourceBtn){ openSourceBtn = document.createElement('button'); openSourceBtn.id = 'openSourceBtn'; openSourceBtn.className = 'miniplayer-btn'; openSourceBtn.textContent = 'Open source'; openSourceBtn.title = 'Open current source in a new tab'; controlsArea.appendChild(openSourceBtn); }
 
   let videoEl = null; let hls = null; let currentSource = null; let retryCount = 0;
   const MAX_RETRIES = 3;
@@ -146,6 +156,22 @@
     videoEl.muted = true; videoEl.autoplay = false; videoEl.preload = 'metadata';
 
   }
+
+  // helper: cycle to next available source tab
+  function tryAlternateSource(){
+    if(!currentSource){ setStatus('No current source to alternate from', true); return; }
+    const all = Array.from(document.querySelectorAll('.source-tab'));
+    if(all.length < 2){ setStatus('No alternate sources available', true); return; }
+    const idx = all.indexOf(currentSource);
+    const next = all[(idx + 1) % all.length];
+    if(next){ next.click(); setStatus('Switched to alternate source: '+(next.dataset.sourceUrl || next.dataset.embed || 'embed'), false); }
+  }
+
+  // helper: open current source in new tab
+  function openCurrentSource(){ if(!currentSource) return; const url = currentSource.dataset.sourceUrl || currentSource.dataset.embed || null; if(!url){ setStatus('No URL to open for this source', true); return; } window.open(url, '_blank'); }
+
+  tryAltBtn.addEventListener('click', tryAlternateSource);
+  openSourceBtn.addEventListener('click', openCurrentSource);
 
   // Source tab switching with status and fallback hints
   sourceTabs.forEach(btn=> btn.addEventListener('click', async (e)=>{
