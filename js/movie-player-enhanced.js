@@ -6,7 +6,7 @@
 // - Loads hls.js on demand from CDN when needed
 // - Adds accessible keyboard controls and captions support (auto-attaches <track> when provided)
 // - Adds basic error UI, retry/backoff, seek-on-progress, a lightweight health/status indicator
-// - Adds a "Try alternate source" control to quickly switch to another available source
+// - Adds a "Try alternate source" control and captions toggle
 
 (function(){
   'use strict';
@@ -24,14 +24,16 @@
   let statusNode = document.getElementById('miniplayerStatus');
   if(!statusNode){ statusNode = document.createElement('div'); statusNode.id = 'miniplayerStatus'; statusNode.style.fontSize='0.9rem'; statusNode.style.color='rgba(6,12,30,0.6)'; statusNode.style.marginTop='8px'; container.parentNode.insertBefore(statusNode, container.nextSibling); }
 
-  // add alternate source button area
+  // add alternate source & caption toggles area
   let controlsArea = document.getElementById('miniplayerExtraControls');
   if(!controlsArea){ controlsArea = document.createElement('div'); controlsArea.id = 'miniplayerExtraControls'; controlsArea.style.display = 'flex'; controlsArea.style.gap = '8px'; controlsArea.style.marginTop = '6px'; container.parentNode.insertBefore(controlsArea, statusNode.nextSibling); }
 
   let tryAltBtn = document.getElementById('tryAlternateSourceBtn');
   let openSourceBtn = document.getElementById('openSourceBtn');
+  let captionsToggleBtn = document.getElementById('captionsToggleBtn');
   if(!tryAltBtn){ tryAltBtn = document.createElement('button'); tryAltBtn.id = 'tryAlternateSourceBtn'; tryAltBtn.className = 'miniplayer-btn'; tryAltBtn.textContent = 'Try alternate source'; tryAltBtn.title = 'Cycle to the next available source'; controlsArea.appendChild(tryAltBtn); }
   if(!openSourceBtn){ openSourceBtn = document.createElement('button'); openSourceBtn.id = 'openSourceBtn'; openSourceBtn.className = 'miniplayer-btn'; openSourceBtn.textContent = 'Open source'; openSourceBtn.title = 'Open current source in a new tab'; controlsArea.appendChild(openSourceBtn); }
+  if(!captionsToggleBtn){ captionsToggleBtn = document.createElement('button'); captionsToggleBtn.id = 'captionsToggleBtn'; captionsToggleBtn.className = 'miniplayer-btn'; captionsToggleBtn.textContent = 'Captions'; captionsToggleBtn.title = 'Toggle captions'; controlsArea.appendChild(captionsToggleBtn); }
 
   let videoEl = null; let hls = null; let currentSource = null; let retryCount = 0;
   const MAX_RETRIES = 3;
@@ -72,7 +74,7 @@
 
     // attach captions if the data attribute provides it
     const captionsUrl = currentSource && currentSource.dataset.captions;
-    if(captionsUrl){ const t = document.createElement('track'); t.kind='subtitles'; t.srclang='en'; t.label='English'; t.src=captionsUrl; t.default = true; videoEl.appendChild(t); }
+    if(captionsUrl){ const t = document.createElement('track'); t.kind='subtitles'; t.srclang='en'; t.label='English'; t.src=captionsUrl; t.default = false; videoEl.appendChild(t); }
 
     container.innerHTML = ''; container.appendChild(videoEl);
 
@@ -151,6 +153,18 @@
       if(e.key === 'ArrowRight'){ videoEl.currentTime = Math.min(videoEl.duration, videoEl.currentTime + 5); }
       if(e.key === 'ArrowLeft'){ videoEl.currentTime = Math.max(0, videoEl.currentTime - 5); }
     });
+
+    // captions toggle wiring
+    captionsToggleBtn.onclick = ()=>{
+      if(!videoEl) return;
+      const tracks = videoEl.textTracks || [];
+      if(tracks.length === 0){ setStatus('No captions available for this source', true); return; }
+      // toggle the first track (common case)
+      const t = tracks[0];
+      if(t.mode === 'show'){
+        t.mode = 'disabled'; captionsToggleBtn.style.opacity = '0.6'; setStatus('Captions off');
+      } else { t.mode = 'show'; captionsToggleBtn.style.opacity = '1.0'; setStatus('Captions on'); }
+    };
 
     // autoplay muted preview behavior: don't force autoplay but allow quick preview
     videoEl.muted = true; videoEl.autoplay = false; videoEl.preload = 'metadata';
