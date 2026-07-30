@@ -1,0 +1,73 @@
+/* css/typography-themes.css
+   Topic-aware typographic themes + modern-minimal helper.
+   - Each topic section can add a class like .theme-astronomy on its container or body to get a tailored font and accent.
+   - Modern minimalism helper (.modern-minimal) reduces ornamentation, tightens spacing, and uses the UI sans for clarity.
+   - This CSS ties into css/fonts.css variables and css/seasonal-vars.css for accents.
+*/
+
+:root {
+  /* default editorial accents (can be overridden by seasonal-vars) */
+  --accent-astronomy: #2B8AE2;
+  --accent-history: #8B5E3C;
+  --accent-art: #C84BFF;
+  --accent-geography: #2E8B57;
+  --accent-nautical: #046A8A;
+}
+
+/* Modern minimalism utility: low ornament, airy spacing, clear micro-typography */
+.modern-minimal {
+  --ornament-opacity: 0.02 !important;
+  --plaque-bg: rgba(255,255,255,0.12);
+  --primary-accent: var(--accent-astronomy);
+  font-family: var(--ui-sans);
+  letter-spacing: 0.1px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+.modern-minimal .hero-title {
+  font-family: var(--ui-sans);
+  font-weight: 600;
+  font-size: clamp(2.4rem, 6.2vw, 3.6rem);
+  -webkit-text-stroke: 0; /* cleaner for sans heading */
+  background: none; -webkit-background-clip: unset; -webkit-text-fill-color: unset; color: var(--primary-accent, #062B5A);
+  text-shadow: none;
+}
+
+/* Topic specific themes - intended to be applied to section containers or body */
+.theme-astronomy { --primary-accent: var(--accent-astronomy); }
+.theme-history { --primary-accent: var(--accent-history); }
+.theme-art { --primary-accent: var(--accent-art); }
+.theme-geography { --primary-accent: var(--accent-geography); }
+.theme-nautical { --primary-accent: var(--accent-nautical); }
+
+/* Heading and body mappings for each theme (uses serif for editorial topics, sans for modern topics) */
+.theme-astronomy h1, .theme-astronomy h2, .theme-astronomy .hero-title { font-family: 'Playfair Local', var(--heading-serif); }
+.theme-history h1, .theme-history h2 { font-family: 'EB Garamond Local', var(--heading-serif); }
+.theme-art h1, .theme-art h2 { font-family: 'Cormorant Local', var(--heading-serif); }
+.theme-geography h1, .theme-geography h2 { font-family: 'Cormorant Local', var(--heading-serif); }
+.theme-nautical h1, .theme-nautical h2 { font-family: 'EB Garamond Local', var(--heading-serif); }
+
+/* Subtle accent lines and micro-interactions per theme */
+.theme-astronomy .section-divider::after { background: linear-gradient(90deg, rgba(43,138,226,0.18), rgba(43,138,226,0)); }
+.theme-history .section-divider::after { background: linear-gradient(90deg, rgba(139,94,60,0.18), rgba(139,94,60,0)); }
+.theme-art .section-divider::after { background: linear-gradient(90deg, rgba(200,75,255,0.18), rgba(200,75,255,0)); }
+
+/* Readability helpers for longform articles */
+.article-body { max-width: 70ch; margin: 0 auto; line-height: 1.75; font-size: 1.06rem; }
+.article-body p { margin: 1.05em 0; }
+
+/* Responsive editorial rhythm using clamp() and container queries when available */
+@container (min-width: 700px) {
+  .hero-title { font-size: clamp(3rem, 6.8vw, 5.2rem); }
+}
+
+/* Emphasize modern minimalism for nav and UI components */
+.modern-minimal .nav-container { gap: 12px; padding: 10px 18px; }
+.modern-minimal .nav-title { font-family: var(--ui-sans); font-weight: 600; letter-spacing: 0.2px; }
+
+/* Accessible focus ring tuned for beauty */
+:focus { outline: none; }
+a:focus, button:focus, input:focus { box-shadow: 0 0 0 3px rgba(66,153,225,0.12), 0 2px 8px rgba(2,6,23,0.12); border-radius: 6px; }
+
+/* De-emphasize ornamentation when modern-minimal is applied */
+.modern-minimal .hero-baroque-ornament { opacity: 0.04 !important; transform: translateY(-6%); }
