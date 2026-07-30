@@ -1,0 +1,16 @@
+/* css/uploader.css
+   Small, accessible, modern-minimal styling for the admin uploader preview and controls.
+*/
+.uploader { font-family: var(--ui-sans); color: #0b1220; max-width: 720px; margin: 18px auto; }
+.uploader-dropzone { border: 1px dashed rgba(6,12,30,0.12); padding: 28px; border-radius: 10px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(6,12,30,0.02)); cursor: pointer; }
+.uploader-dropzone.dragover { background: rgba(6,12,30,0.03); box-shadow: 0 6px 16px rgba(6,12,30,0.04); }
+.uploader-instructions { text-align: center; }
+.uploader-browse { background: var(--primary-accent, #1E6ED8); color: white; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; }
+.uploader-preview { display: flex; gap: 12px; margin-top: 12px; align-items: center; }
+.preview-media img, .preview-media video { width: 160px; height: 90px; object-fit: cover; border-radius: 6px; }
+.preview-meta { flex: 1; }
+.upload-progress { height: 10px; background: rgba(6,12,30,0.06); border-radius: 8px; overflow: hidden; }
+.upload-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary-accent,#1E6ED8), #5AC8FA); transition: width 320ms ease; }
+.upload-controls { margin-top: 8px; display:flex; gap:8px; }
+.upload-controls button { padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(6,12,30,0.06); background: white; cursor: pointer; }
+.uploader-log { margin-top: 8px; font-size: 0.9rem; color: rgba(6,12,30,0.6); max-height: 160px; overflow:auto; padding:8px; border-radius:6px; background: rgba(6,12,30,0.02); }

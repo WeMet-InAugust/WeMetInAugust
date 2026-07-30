@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="/css/france-aoi.css">
     <link rel="stylesheet" href="/css/sections.css">
     <link rel="stylesheet" href="/css/fonts.css">
+    <link rel="stylesheet" href="/css/uploader.css">
     <link rel="stylesheet" href="/css/ornaments.css">
     <link rel="stylesheet" href="/css/typography-themes.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Cormorant+Garamond:wght@400;700&family=EB+Garamond:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -165,16 +166,16 @@
                 </div>
             </div>
             
-            <div class="home-newsletter">
-                <h3>Stay Connected</h3>
-                <p>Receive curated articles, discoveries, and reflections directly to your inbox.</p>
-                <form class="newsletter-form" id="newsletterForm">
-                    <input type="email" placeholder="your@email.com" required>
-                    <button type="submit">Subscribe</button>
-                </form>
+                <div class="home-newsletter">
+                    <h3>Stay Connected</h3>
+                    <p>Receive curated articles, discoveries, and reflections directly to your inbox.</p>
+                    <form class="newsletter-form" id="newsletterForm">
+                        <input type="email" placeholder="your@email.com" required>
+                        <button type="submit">Subscribe</button>
+                    </form>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
 
     <!-- MUSIC PLAYER -->
     <div class="music-player" id="musicPlayer">
@@ -209,18 +210,19 @@
         
         <div class="miniplayer-controls">
             <div class="source-tabs" id="sourceTabsContainer">
-                <button class="source-tab active" data-source="0">Player 1</button>
-                <button class="source-tab" data-source="1">Player 2</button>
-                <button class="source-tab" data-source="2">Player 3</button>
-                <button class="source-tab" data-source="3">Player 4</button>
+                <!-- data-source-url / data-embed attributes can be filled by server-side templates -->
+                <button class="source-tab active" data-source="0" data-source-url="/media/sample-seasonal.m3u8">Player 1</button>
+                <button class="source-tab" data-source="1" data-source-url="/media/sample-seasonal.mp4">Player 2</button>
+                <button class="source-tab" data-source="2" data-embed="https://player.vimeo.com/video/123456789">Player 3</button>
+                <button class="source-tab" data-source="3" data-source-url="/media/backup.m3u8">Player 4</button>
             </div>
             <div class="miniplayer-button-controls">
-                <button id="miniplayerPlayPause" class="miniplayer-btn">▶</button>
+                <button id="miniplayerPlayPause" class="miniplayer-btn" aria-label="Play/Pause">▶</button>
                 <div class="miniplayer-progress">
                     <div class="miniplayer-progress-bar" id="miniplayerProgressBar"></div>
                 </div>
-                <button id="miniplayerMute" class="miniplayer-btn">🔊</button>
-                <button id="miniplayerFullscreen" class="miniplayer-btn">⛶</button>
+                <button id="miniplayerMute" class="miniplayer-btn" aria-label="Mute">🔊</button>
+                <button id="miniplayerFullscreen" class="miniplayer-btn" aria-label="Fullscreen">⛶</button>
             </div>
         </div>
     </div>
@@ -240,5 +242,6 @@
     <script src="/js/france-aoi-idle.js"></script>
     <script src="/js/admin-uploader.js"></script>
     <script src="/js/topic-themes.js"></script>
+    <script src="/js/movie-player-enhanced.js"></script>
 </body>
 </html>
