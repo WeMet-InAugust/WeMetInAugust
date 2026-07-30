@@ -1,7 +1,11 @@
 /* Self-hosted font fallbacks and @font-face declarations.
    This file prefers local /fonts/*.woff2 files if present, but falls back
    to system fonts and Google-hosted fonts (linked in index.html) if not.
-   Includes font-display: swap for performance.
+   Includes font-display: swap for performance and optional variable-font/optical sizing enhancements.
+
+   Notes:
+   - Place full source TTF/OTF files in /fonts/source/ and run tools/subset-fonts.sh to create subsetted .woff2 files.
+   - Use fonttools (pyftsubset) to subset to Latin+punctuation to dramatically reduce size.
 */
 
 @font-face {
@@ -10,6 +14,8 @@
   font-weight: 400;
   font-style: normal;
   font-display: swap;
+  /* optional unicode-range to allow progressive loading by script: */
+  /* unicode-range: U+000-5FF; */
 }
 @font-face {
   font-family: 'EB Garamond Local';
@@ -35,14 +41,46 @@
   font-display: swap;
 }
 
-/* CSS variables for typographic stacks */
+/* Example variable-font declaration (if you supply a variable woff2):
+@font-face {
+  font-family: 'EB Garamond Variable';
+  src: url('/fonts/EBGaramond-VF.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+*/
+
+/* CSS variables for typographic stacks and scale */
 :root{
   --heading-serif: 'EB Garamond Local', 'Playfair Local', 'Playfair Display', 'Cormorant Local', 'Cormorant Garamond', serif;
   --body-serif: 'Cormorant Local', 'Cormorant Garamond', 'Lora', serif;
   --ui-sans: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+
+  /* typographic scale */
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-base: 1rem;
+  --fs-lg: 1.125rem;
+  --fs-xl: 1.25rem;
+  --fs-xxl: 1.5rem;
 }
 
-/* Utility classes */
-.h-fallback-serif { font-family: var(--heading-serif); }
-.b-fallback-serif { font-family: var(--body-serif); }
-.u-sans { font-family: var(--ui-sans); }
+/* Apply optical sizing where available and useful */
+@supports (font-variation-settings: normal) {
+  /* if variable fonts are provided, enable optical sizing on headings */
+  .hero-title, h1, h2, h3 { font-variation-settings: 'opsz' 32; }
+}
+
+/* Font feature enhancements for beauty */
+.h-fallback-serif { font-family: var(--heading-serif); font-variant-ligatures: common-ligatures; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+.b-fallback-serif { font-family: var(--body-serif); font-variant-ligatures: common-ligatures; -webkit-font-smoothing: antialiased; }
+.u-sans { font-family: var(--ui-sans); -webkit-font-smoothing: antialiased; }
+
+/* Utility: modern editorial rhythm helpers */
+.lead { font-size: var(--fs-xl); line-height: 1.6; }
+.small { font-size: var(--fs-sm); }
+
+/* Fallback note for environments where local fonts are not yet installed:
+   The system will use the Google-hosted link in index.html as a graceful fallback.
+*/
