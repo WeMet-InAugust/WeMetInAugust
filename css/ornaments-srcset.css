@@ -1,0 +1,35 @@
+/* css/ornaments-srcset.css
+   Provides hi-DPI image-set fallbacks for hero ornament backgrounds and small utilities
+   to prefer vector @2x SVGs where available. Keeps opacity/transform tuned for 'modern-minimal'.
+*/
+.hero-baroque-ornament {
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  transition: opacity 420ms ease, transform 520ms cubic-bezier(.2,.8,.2,1);
+}
+
+/* Use image-set when available so browsers can pick the best density */
+.season-summer .hero-baroque-ornament {
+  background-image: image-set(
+    url('/images/ornaments/summer.svg') 1x,
+    url('/images/ornaments/summer@2x.svg') 2x
+  );
+}
+.season-spring .hero-baroque-ornament {
+  background-image: image-set(
+    url('/images/ornaments/spring.svg') 1x,
+    url('/images/ornaments/spring@2x.svg') 2x
+  );
+}
+.season-autumn .hero-baroque-ornament,
+.season-summer-late .hero-baroque-ornament { background-image: image-set(url('/images/ornaments/autumn.svg') 1x, url('/images/ornaments/autumn@2x.svg') 2x); }
+.season-winter-frost .hero-baroque-ornament { background-image: image-set(url('/images/ornaments/winter.svg') 1x, url('/images/ornaments/winter@2x.svg') 2x); }
+.season-christmas-season .hero-baroque-ornament { background-image: image-set(url('/images/ornaments/christmas.svg') 1x, url('/images/ornaments/christmas@2x.svg') 2x); }
+
+/* Respect modern-minimal helper */
+.modern-minimal .hero-baroque-ornament { opacity: 0.04 !important; transform: translateY(-6%); }
+
+@media (prefers-reduced-motion: reduce){
+  .hero-baroque-ornament { transition: none !important; }
+}
