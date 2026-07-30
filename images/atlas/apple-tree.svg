@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="512" viewBox="0 0 1024 512" aria-hidden="true'>
+  <rect width="1024" height="512" fill="none" />
+  <g id="tree" transform="translate(80,40) scale(1.0)">
+    <rect x="0" y="360" width="120" height="80" fill="#8D6E63" />
+    <g id="foliage" fill="#7FB069">
+      <ellipse cx="60" cy="240" rx="220" ry="120" />
+      <ellipse cx="60" cy="160" rx="180" ry="100" />
+      <ellipse cx="60" cy="100" rx="140" ry="80" />
+    </g>
+    <g id="flowers">
+      <circle cx="140" cy="140" r="10" fill="#FFD1DC" />
+      <circle cx="40" cy="180" r="12" fill="#AED581" />
+      <circle cx="200" cy="200" r="8" fill="#FFF176" />
+    </g>
+  </g>
+</svg>
