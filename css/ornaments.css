@@ -1,0 +1,24 @@
+/* ornaments.css - season-based ornament backgrounds for hero
+   Each .hero-baroque-ornament will use the seasonal image as a background
+   The images are vector SVGs and scale cleanly. Hi-DPI variants can be added
+   as ornaments/spring@2x.svg etc and referenced with image-set if desired.
+*/
+.hero-baroque-ornament {
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  transition: opacity 420ms ease, transform 520ms cubic-bezier(.2,.8,.2,1);
+}
+
+/* Default: summer */
+.season-summer .hero-baroque-ornament { background-image: url('/images/ornaments/summer.svg'); }
+.season-summer-late .hero-baroque-ornament { background-image: url('/images/ornaments/autumn.svg'); }
+.season-spring .hero-baroque-ornament { background-image: url('/images/ornaments/spring.svg'); }
+.season-autumn .hero-baroque-ornament { background-image: url('/images/ornaments/autumn.svg'); }
+.season-winter-frost .hero-baroque-ornament { background-image: url('/images/ornaments/winter.svg'); }
+.season-christmas-season .hero-baroque-ornament { background-image: url('/images/ornaments/christmas.svg'); }
+
+/* Reduced motion: keep still */
+@media (prefers-reduced-motion: reduce){
+  .hero-baroque-ornament { transition: none !important; }
+}

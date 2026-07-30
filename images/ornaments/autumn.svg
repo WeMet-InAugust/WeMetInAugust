@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="180" viewBox="0 0 600 180" aria-hidden="true">
+  <g fill="none" stroke="#C25A00" stroke-width="2">
+    <path d="M60 120 C150 30 450 30 540 120" stroke="#C25A00" stroke-opacity="0.16"/>
+    <g transform="translate(140,60)">
+      <path d="M30 20 q10 -18 30 -12 q20 6 30 0 q10 -6 22 12" fill="#FFB74D" opacity="0.95" />
+      <circle cx="70" cy="22" r="5" fill="#FF8A65" />
+    </g>
+  </g>
+</svg>
