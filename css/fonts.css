@@ -1,11 +1,165 @@
-/* css/fonts.css
-   Webfont face declarations for subsetted fonts placed under /fonts/.
-   These reference subsetted .woff2 files which should be generated using the scripts/subset-fonts.sh tool
-   and committed into /fonts/. If you prefer to supply source TTF/OTF fonts, place them under fonts/source/ and run the script.
+/* css/fonts.css — refined typographic system
+   Updated to be more delicate and context-aware:
+   - stronger feature control (ligatures, kerning, optical sizing)
+   - conservative variable-font fallbacks
+   - editorial stacks mapped per topic via CSS variables (theme-aware)
+   - modern-minimal utility tuning for spacing and controls
+   - font-display: swap retained for FOIT avoidance
 
-   The CSS uses font-display: swap for improved performance and crossOrigin friendly preloads.
+   NOTE: This file expects the subsetted .woff2 files to be present at /fonts/*.woff2.
+   If you plan to upload source fonts, place them in /fonts/source/ and I will run the subset script and commit the .woff2 files.
 */
 
+@font-face {
+  font-family: 'EB Garamond Local';
+  src: url('/fonts/EBGaramond-Regular.woff2') format('woff2');
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+  font-synthesis: none;
+}
+@font-face {
+  font-family: 'EB Garamond Local';
+  src: url('/fonts/EBGaramond-Bold.woff2') format('woff2');
+  font-weight: 600 800;
+  font-style: normal;
+  font-display: swap;
+  font-synthesis: none;
+}
+
+@font-face {
+  font-family: 'Playfair Local';
+  src: url('/fonts/PlayfairDisplay-Regular.woff2') format('woff2');
+  font-weight: 600 900;
+  font-style: normal;
+  font-display: swap;
+  font-synthesis: none;
+}
+
+@font-face {
+  font-family: 'Cormorant Local';
+  src: url('/fonts/CormorantGaramond-Regular.woff2') format('woff2');
+  font-weight: 300 600;
+  font-style: normal;
+  font-display: swap;
+  font-synthesis: none;
+}
+
+/* If you later provide variable fonts, use this pattern for optical sizing and axis support
+@font-face {
+  font-family: 'EB Garamond VF';
+  src: url('/fonts/EBGaramond-VF.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+*/
+
+:root{
+  /* editorial stacks tuned for delicacy per topic */
+  --heading-serif: 'EB Garamond Local', 'Playfair Local', 'Playfair Display', 'EB Garamond', serif;
+  --heading-serif-art: 'Cormorant Local', 'Cormorant Garamond', 'Playfair Local', serif;
+  --body-serif: 'Cormorant Local', 'Cormorant Garamond', 'Lora', Georgia, 'Times New Roman', serif;
+  --ui-sans: 'Inter var', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+
+  /* typographic scale — use clamp for responsive rhythm */
+  --fs-xs: 0.75rem;
+  --fs-sm: clamp(0.84rem, 0.8rem + 0.15vw, 0.94rem);
+  --fs-base: 1rem;
+  --fs-lg: clamp(1.06rem, 1rem + 0.6vw, 1.18rem);
+  --fs-xl: clamp(1.25rem, 1.15rem + 1.2vw, 1.6rem);
+  --fs-xxl: clamp(1.6rem, 1.4rem + 2.2vw, 2.6rem);
+
+  /* micro typographic tweaks */
+  --heading-tracking: -0.02em;
+  --body-tracking: 0.01em;
+}
+
+/* Apply optical sizing when available: prefer larger opsz for display headings */
+@supports (font-variation-settings: normal) {
+  .hero-title, h1, h2 { font-variation-settings: 'opsz' 36; }
+  h3, h4 { font-variation-settings: 'opsz' 20; }
+}
+
+/* Micro-feature settings for elegance */
+.h-fallback-serif {
+  font-family: var(--heading-serif);
+  font-kerning: normal;
+  font-variant-ligatures: common-ligatures discretionary-ligatures;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  letter-spacing: var(--heading-tracking);
+}
+.b-fallback-serif {
+  font-family: var(--body-serif);
+  font-kerning: normal;
+  font-variant-ligatures: common-ligatures;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: var(--body-tracking);
+  line-height: 1.7;
+}
+.u-sans {
+  font-family: var(--ui-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+/* Headings: delicate defaults */
+.hero-title {
+  font-family: var(--heading-serif);
+  font-weight: 700;
+  font-size: clamp(2.2rem, 6vw, 4.2rem);
+  line-height: 1.02;
+  margin: 0.1em 0 0.4em;
+  letter-spacing: var(--heading-tracking);
+}
+
+h1, h2 {
+  font-family: var(--heading-serif);
+  font-weight: 600;
+  margin: 0 0 0.35em;
+}
+
+p, li, .article-body { font-family: var(--body-serif); font-size: var(--fs-base); }
+
+/* Modern minimal helper: keep it subtle and precise */
+.modern-minimal {
+  --plaque-bg: rgba(255,255,255,0.06);
+  --ornament-opacity: 0.03;
+  font-family: var(--ui-sans);
+  letter-spacing: 0.02em;
+}
+
+.modern-minimal .hero-title { font-family: var(--ui-sans); font-weight: 600; }
+.modern-minimal .nav-container { gap: 10px; padding: 10px 14px; }
+.modern-minimal .hero-baroque-ornament { opacity: var(--ornament-opacity) !important; transform: translateY(-4%); }
+
+/* Topic-aware stacks (applied by topic-themes.js via body.theme-*) */
+.theme-astronomy { --heading-serif: 'Playfair Local', 'EB Garamond Local', serif; --primary-accent: #1E6ED8; }
+.theme-history { --heading-serif: 'EB Garamond Local', 'Playfair Local', serif; --primary-accent: #7B4F3D; }
+.theme-art { --heading-serif: 'Cormorant Local', 'Playfair Local', serif; --primary-accent: #A23FAD; }
+.theme-geography { --heading-serif: 'EB Garamond Local', 'Cormorant Local', serif; --primary-accent: #257A4D; }
+
+/* Readability helpers */
+.article-body { max-width: 70ch; margin: 0 auto; line-height: 1.7; font-size: var(--fs-lg); }
+.lead { font-size: var(--fs-xl); line-height: 1.55; }
+.small { font-size: var(--fs-sm); }
+
+/* Reduce FOIT risk: ensure swap and small preloads already in index.html */
+
+/* Accessibility: tuned focus styles that remain visually elegant */
+:focus { outline: none; }
+a:focus, button:focus, input:focus {
+  box-shadow: 0 0 0 4px rgba(34,111,215,0.12), 0 6px 24px rgba(6,12,30,0.08);
+  border-radius: 8px;
+}
+
+/* Performance: prefer font-synthesis none and limit heavy font operations */
+html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+/* Final note: when you add subsetted .woff2 files I will run a quick check of file sizes and update index.html preloads to only the critical weights (2-3) to balance beauty & perf. */
+
+/* Additional simplified @font-face aliases to ensure compatibility with templates expecting these family names */
 @font-face {
   font-family: 'EB Garamond';
   src: url('/fonts/EBGaramond-Regular.woff2') format('woff2');
@@ -13,7 +167,6 @@
   font-style: normal;
   font-display: swap;
 }
-
 @font-face {
   font-family: 'EB Garamond';
   src: url('/fonts/EBGaramond-Bold.woff2') format('woff2');
@@ -21,7 +174,6 @@
   font-style: normal;
   font-display: swap;
 }
-
 @font-face {
   font-family: 'Playfair Display';
   src: url('/fonts/PlayfairDisplay-Regular.woff2') format('woff2');
@@ -29,7 +181,6 @@
   font-style: normal;
   font-display: swap;
 }
-
 @font-face {
   font-family: 'Playfair Display';
   src: url('/fonts/PlayfairDisplay-Bold.woff2') format('woff2');
@@ -37,7 +188,6 @@
   font-style: normal;
   font-display: swap;
 }
-
 @font-face {
   font-family: 'Cormorant Garamond';
   src: url('/fonts/CormorantGaramond-Regular.woff2') format('woff2');
@@ -45,7 +195,6 @@
   font-style: normal;
   font-display: swap;
 }
-
 @font-face {
   font-family: 'Inter Variable';
   src: url('/fonts/Inter-Variable.woff2') format('woff2');
@@ -53,12 +202,3 @@
   font-style: normal;
   font-display: swap;
 }
-
-/* Fallback font stacks used across the site */
-:root{
-  --serif-stack: 'EB Garamond', 'Playfair Display', 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
-  --ui-stack: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-}
-
-body{ font-family: var(--ui-stack); }
-h1,h2,h3,h4,h5,h6,blockquote{ font-family: var(--serif-stack); }
