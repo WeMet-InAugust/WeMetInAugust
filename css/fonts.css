@@ -1,204 +1,193 @@
-/* css/fonts.css — refined typographic system
-   Updated to be more delicate and context-aware:
-   - stronger feature control (ligatures, kerning, optical sizing)
-   - conservative variable-font fallbacks
-   - editorial stacks mapped per topic via CSS variables (theme-aware)
-   - modern-minimal utility tuning for spacing and controls
-   - font-display: swap retained for FOIT avoidance
+/* css/fonts.css — per-page expressive typographic system
 
-   NOTE: This file expects the subsetted .woff2 files to be present at /fonts/*.woff2.
-   If you plan to upload source fonts, place them in /fonts/source/ and I will run the subset script and commit the .woff2 files.
+This file replaces the single editorial stack approach with a per-page typography mapping
+so each top-level page can use its own expressive heading and body fonts while preserving
+reliable fallbacks and performance-friendly preloads.
+
+How it works
+- Use body.page-<slug> (e.g. body.page-home, body.page-art) on each top-level page to select
+  a unique typographic voice for that page.
+- Each page class sets two CSS variables:
+    --heading-font: the desired heading font-family (first choice should be a local/font alias or a loaded webfont)
+    --body-font: the desired body font-family
+- The rest of the site uses var(--heading-font) and var(--body-font) so pages get their own fonts.
+
+Notes
+- This file references a set of common @font-face aliases expected to live under /fonts/*.woff2.
+  Replace the placeholder files in /fonts/ with actual subsetted .woff2 binaries (run scripts/subset-fonts.sh
+  against your source fonts) and confirm names match the src URLs below.
+- If you prefer to load fonts from a provider (Google Fonts, etc.), either preload the remote CSS in
+  index.html or add @import calls in a critical CSS build step. Using locally hosted subsetted .woff2 files
+  is preferred for consistent control and privacy.
+
+Per-page examples included below:
+- page-home: warm, elegant serif headings + neutral sans for body
+- page-art: decorative display headings + narrow serif body
+- page-history: classical transitional serif headings + book serif body
+- page-photography: minimalist sans headings + humanist serif body
+- page-travel: condensed display headings + friendly sans body
+- page-editorial: restrained serif headings + readable serif body (good for articles)
+
+To add a new page voice:
+1) Add a body.<your-page-class> on the page template.
+2) Set --heading-font and --body-font in the block below.
+3) Add or generate corresponding subsetted .woff2 files into /fonts/ and update @font-face aliases if needed.
 */
 
+/* --------------------
+   Base @font-face aliases
+   -------------------- */
+/* These are the local aliases the rest of the CSS expects. Replace the URLs with your real subsetted fonts. */
 @font-face {
-  font-family: 'EB Garamond Local';
+  font-family: 'EBGaramond-Local';
   src: url('/fonts/EBGaramond-Regular.woff2') format('woff2');
-  font-weight: 400 500;
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
-  font-synthesis: none;
 }
 @font-face {
-  font-family: 'EB Garamond Local';
+  font-family: 'EBGaramond-Local';
   src: url('/fonts/EBGaramond-Bold.woff2') format('woff2');
-  font-weight: 600 800;
+  font-weight: 700;
   font-style: normal;
   font-display: swap;
-  font-synthesis: none;
 }
 
 @font-face {
-  font-family: 'Playfair Local';
+  font-family: 'Playfair-Local';
   src: url('/fonts/PlayfairDisplay-Regular.woff2') format('woff2');
-  font-weight: 600 900;
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
-  font-synthesis: none;
 }
 
 @font-face {
-  font-family: 'Cormorant Local';
+  font-family: 'Cormorant-Local';
   src: url('/fonts/CormorantGaramond-Regular.woff2') format('woff2');
-  font-weight: 300 600;
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
-  font-synthesis: none;
 }
 
-/* If you later provide variable fonts, use this pattern for optical sizing and axis support
 @font-face {
-  font-family: 'EB Garamond VF';
-  src: url('/fonts/EBGaramond-VF.woff2') format('woff2');
+  font-family: 'Inter-Variable-Local';
+  src: url('/fonts/Inter-Variable.woff2') format('woff2');
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
-*/
 
-:root{
-  /* editorial stacks tuned for delicacy per topic */
-  --heading-serif: 'EB Garamond Local', 'Playfair Local', 'Playfair Display', 'EB Garamond', serif;
-  --heading-serif-art: 'Cormorant Local', 'Cormorant Garamond', 'Playfair Local', serif;
-  --body-serif: 'Cormorant Local', 'Cormorant Garamond', 'Lora', Georgia, 'Times New Roman', serif;
-  --ui-sans: 'Inter var', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+/* Placeholder aliases for more expressive or decorative fonts — replace when you add assets */
+@font-face {
+  font-family: 'HeroScript-Local';
+  src: url('/fonts/HeroScript.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'CondensedDisplay-Local';
+  src: url('/fonts/CondensedDisplay.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
 
-  /* typographic scale — use clamp for responsive rhythm */
-  --fs-xs: 0.75rem;
-  --fs-sm: clamp(0.84rem, 0.8rem + 0.15vw, 0.94rem);
+/* --------------------
+   Default variables
+   -------------------- */
+:root {
+  /* Default page voice (applies when no body.page-* class is present) */
+  --heading-font: 'EBGaramond-Local', 'Playfair-Local', Georgia, 'Times New Roman', serif;
+  --body-font: 'Inter-Variable-Local', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  /* typographic scale */
   --fs-base: 1rem;
   --fs-lg: clamp(1.06rem, 1rem + 0.6vw, 1.18rem);
   --fs-xl: clamp(1.25rem, 1.15rem + 1.2vw, 1.6rem);
-  --fs-xxl: clamp(1.6rem, 1.4rem + 2.2vw, 2.6rem);
 
-  /* micro typographic tweaks */
   --heading-tracking: -0.02em;
-  --body-tracking: 0.01em;
 }
 
-/* Apply optical sizing when available: prefer larger opsz for display headings */
-@supports (font-variation-settings: normal) {
-  .hero-title, h1, h2 { font-variation-settings: 'opsz' 36; }
-  h3, h4 { font-variation-settings: 'opsz' 20; }
+/* --------------------
+   Per-page voice mappings
+   -------------------- */
+/* Home: warm elegant headings, neutral sans body */
+body.page-home {
+  --heading-font: 'Playfair-Local', 'EBGaramond-Local', Georgia, serif;
+  --body-font: 'Inter-Variable-Local', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
 }
 
-/* Micro-feature settings for elegance */
-.h-fallback-serif {
-  font-family: var(--heading-serif);
+/* Art: decorative display headings, narrow serif body */
+body.page-art {
+  --heading-font: 'HeroScript-Local', 'Playfair-Local', 'EBGaramond-Local', serif;
+  --body-font: 'Cormorant-Local', 'Lora', Georgia, serif;
+}
+
+/* History: classical transitional serif headings, book serif body */
+body.page-history {
+  --heading-font: 'EBGaramond-Local', 'Playfair-Local', 'Times New Roman', serif;
+  --body-font: 'Cormorant-Local', 'Lora', Georgia, serif;
+}
+
+/* Photography: minimalist sans headings, humanist serif body */
+body.page-photography {
+  --heading-font: 'Inter-Variable-Local', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --body-font: 'EBGaramond-Local', 'Cormorant-Local', Georgia, serif;
+}
+
+/* Travel: condensed display headings, friendly sans body */
+body.page-travel {
+  --heading-font: 'CondensedDisplay-Local', 'Inter-Variable-Local', 'Arial Narrow', sans-serif;
+  --body-font: 'Inter-Variable-Local', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+/* Editorial / Articles: restrained serif headings + readable serif body */
+body.page-editorial {
+  --heading-font: 'EBGaramond-Local', 'Playfair-Local', Georgia, serif;
+  --body-font: 'Cormorant-Local', 'EBGaramond-Local', 'Lora', Georgia, serif;
+}
+
+/* Generic theme for minimal interfaces */
+body.page-minimal {
+  --heading-font: 'Inter-Variable-Local', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --body-font: 'Inter-Variable-Local', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+/* --------------------
+   Apply variables site-wide
+   -------------------- */
+.h-heading {
+  font-family: var(--heading-font);
   font-kerning: normal;
   font-variant-ligatures: common-ligatures discretionary-ligatures;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
   letter-spacing: var(--heading-tracking);
-}
-.b-fallback-serif {
-  font-family: var(--body-serif);
-  font-kerning: normal;
-  font-variant-ligatures: common-ligatures;
   -webkit-font-smoothing: antialiased;
-  letter-spacing: var(--body-tracking);
-  line-height: 1.7;
 }
-.u-sans {
-  font-family: var(--ui-sans);
+
+body, p, li, .article-body {
+  font-family: var(--body-font);
+  font-size: var(--fs-base);
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  text-rendering: geometricPrecision;
 }
 
-/* Headings: delicate defaults */
-.hero-title {
-  font-family: var(--heading-serif);
-  font-weight: 700;
-  font-size: clamp(2.2rem, 6vw, 4.2rem);
-  line-height: 1.02;
-  margin: 0.1em 0 0.4em;
-  letter-spacing: var(--heading-tracking);
+.hero-title, h1, h2, h3 {
+  font-family: var(--heading-font);
 }
 
-h1, h2 {
-  font-family: var(--heading-serif);
-  font-weight: 600;
-  margin: 0 0 0.35em;
-}
-
-p, li, .article-body { font-family: var(--body-serif); font-size: var(--fs-base); }
-
-/* Modern minimal helper: keep it subtle and precise */
-.modern-minimal {
-  --plaque-bg: rgba(255,255,255,0.06);
-  --ornament-opacity: 0.03;
-  font-family: var(--ui-sans);
-  letter-spacing: 0.02em;
-}
-
-.modern-minimal .hero-title { font-family: var(--ui-sans); font-weight: 600; }
-.modern-minimal .nav-container { gap: 10px; padding: 10px 14px; }
-.modern-minimal .hero-baroque-ornament { opacity: var(--ornament-opacity) !important; transform: translateY(-4%); }
-
-/* Topic-aware stacks (applied by topic-themes.js via body.theme-*) */
-.theme-astronomy { --heading-serif: 'Playfair Local', 'EB Garamond Local', serif; --primary-accent: #1E6ED8; }
-.theme-history { --heading-serif: 'EB Garamond Local', 'Playfair Local', serif; --primary-accent: #7B4F3D; }
-.theme-art { --heading-serif: 'Cormorant Local', 'Playfair Local', serif; --primary-accent: #A23FAD; }
-.theme-geography { --heading-serif: 'EB Garamond Local', 'Cormorant Local', serif; --primary-accent: #257A4D; }
-
-/* Readability helpers */
-.article-body { max-width: 70ch; margin: 0 auto; line-height: 1.7; font-size: var(--fs-lg); }
-.lead { font-size: var(--fs-xl); line-height: 1.55; }
-.small { font-size: var(--fs-sm); }
-
-/* Reduce FOIT risk: ensure swap and small preloads already in index.html */
-
-/* Accessibility: tuned focus styles that remain visually elegant */
+/* Accessibility: tuned focus styles */
 :focus { outline: none; }
 a:focus, button:focus, input:focus {
   box-shadow: 0 0 0 4px rgba(34,111,215,0.12), 0 6px 24px rgba(6,12,30,0.08);
   border-radius: 8px;
 }
 
-/* Performance: prefer font-synthesis none and limit heavy font operations */
-html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-
-/* Final note: when you add subsetted .woff2 files I will run a quick check of file sizes and update index.html preloads to only the critical weights (2-3) to balance beauty & perf. */
-
-/* Additional simplified @font-face aliases to ensure compatibility with templates expecting these family names */
-@font-face {
-  font-family: 'EB Garamond';
-  src: url('/fonts/EBGaramond-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'EB Garamond';
-  src: url('/fonts/EBGaramond-Bold.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Playfair Display';
-  src: url('/fonts/PlayfairDisplay-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Playfair Display';
-  src: url('/fonts/PlayfairDisplay-Bold.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Cormorant Garamond';
-  src: url('/fonts/CormorantGaramond-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Inter Variable';
-  src: url('/fonts/Inter-Variable.woff2') format('woff2');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
+/* Final notes
+ - To make a page use its voice, ensure the page template adds the appropriate class on <body>, e.g.
+     <body class="page-art"> ...
+ - Replace /fonts/*.woff2 placeholder files with generated subsetted .woff2 binaries and ensure filenames
+   match the src URLs above.
+ - If you want me to generate subsets from licensed source fonts you own, upload them under fonts/source/
+   and I will run the subset script and commit the results.
+*/
