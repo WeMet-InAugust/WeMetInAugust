@@ -23,7 +23,482 @@ jobs:
       - run: npm ci
 
       # Run your project test suite
-      - run: npm test
+      - run: npm test 
+      # create and push verification files (run from repo root)
+set -e
+
+BRANCH="verification"
+git checkout -b "$BRANCH" || git switch -c "$BRANCH"
+
+mkdir -p .github/workflows scripts
+
+cat > .github/workflows/verification.yml <<'YAML'
+name: Verification CI
+
+on:
+  push:
+    paths:
+      - 'fonts/**'
+      - 'css/**'
+      - 'docs/**'
+      - 'scripts/**'
+      - '.github/workflows/**'
+
+jobs:
+  subset-and-lighthouse:
+    runs-on: ubuntu-latest
+    env:
+      STAGING_URL: ${{ secrets.STAGING_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update && sudo apt-get install -y python3-pip libfreetype6-dev libpng-dev
+          pip3 install --user fonttools
+
+      - name: Install dependencies
+        run: |
+          npm ci || true
+          npm i -g lighthouse@11 playwright@1 || true
+
+      - name: Run font subsetting script (if fonts/source exists)
+        if: ${{ always() }}
+        run: |
+          if [ -d fonts/source ]; then
+            chmod +x scripts/subset-fonts.sh || true
+            ./scripts/subset-fonts.sh
+          else
+            echo "fonts/source not present — skipping subsetting"
+          fi
+
+      - name: Run Lighthouse on staging URL (requires STAGING_URL secret)
+        if: ${{ secrets.STAGING_URL != '' }}
+        run: |
+          echo "Staging URL: $STAGING_URL"
+          npx -y -q lighthouse "$STAGING_URL" --output=json --output-path=./lighthouse-report.json --only-categories=performance,accessibility,best-practices || true
+
+      - name: Archive Lighthouse report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-report
+          path: ./lighthouse-report.json
+
+  playwright-screenshots:
+    runs-on: ubuntu-latest
+    needs: subset-and-lighthouse
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Playwright
+        run: |
+          npm ci || true
+          npx playwright install --with-deps || true
+
+      - name: Run playback screenshot script
+        run: |
+          node scripts/run-playback-test.js || true
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: playback-screenshots
+          path: ./playback-screenshots
+YAML
+
+cat > scripts/subset-fonts.sh <<'BASH'
+#!/usr/bin/env bash
+# Subset TTF/OTF fonts found under fonts/source/ into web-friendly .woff2 files under fonts/
+# Requires fonttools (pyftsubset). Installs via pip if not present.
+#
+# Usage:
+#  ./scripts/subset-fonts.sh
+# Outputs:
+#  fonts/<basename>.woff2
+set -euo pipefail
+
+# unicode ranges to keep (basic Latin + Latin-1 + Latin Extended-A/B)
+UNICODES="U+0020-007E,U+00A0-00FF,U+0100-024F"
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SRC_DIR="$SCRIPT_DIR/../fonts/source"
+OUT_DIR="$SCRIPT_DIR/../fonts"
+
+mkdir -p "$OUT_DIR"
+if ! command -v pyftsubset >/dev/null 2>&1; then
+  echo "pyftsubset not found; attempting to install fonttools..."
+  pip3 install --user fonttools
+  if ! command -v pyftsubset >/dev/null 2>&1; then
+    echo "pyftsubset still not available. Please install fonttools (pip install fonttools)." >&2
+    exit 1
+  fi
+fi
+
+shopt -s nullglob
+for src in "$SRC_DIR"/*.{ttf,otf,TTF,OTF}; do
+  [ -e "$src" ] || continue
+  base="$(basename "$src")"
+  name="${base%.*}"
+  out="$OUT_DIR/${name}.woff2"
+  echo "Subsetting $src -> $out"
+  # Use a conservative subset covering common Latin ranges and preserve layout features
+  pyftsubset "$src" \
+    --output-file="$out" \
+    --flavor=woff2 \
+    --with-zopfli \
+    --layout-features='*' \
+    --unicodes="$UNICODES" \
+    --recommended-glyphs \
+    --notdef-glyph \
+    --glyph-names \
+    --drop-tables= \
+    || echo "pyftsubset failed for $src (continuing)"
+done
+
+echo "Done. Please check $OUT_DIR for .woff2 files"
+BASH
+
+cat > scripts/run-playback-test.js <<'JS'
+// Playwright script to navigate pages, try to start video playback, collect screenshots.
+// Usage:
+//   STAGING_URL="https://staging.example.com" node scripts/run-playback-test.js
+//
+// It will write screenshots to ./playback-screenshots/
+
+const fs = require('fs');
+const path = require('path');
+const { chromium } = require('playwright');
+
+(async () => {
+  const base = process.env.STAGING_URL || process.argv[2] || 'http://localhost:3000';
+  const outDir = path.resolve(process.cwd(), 'playback-screenshots');
+  if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+
+  // pages to test (adjust to your routes)
+  const pages = [
+    '/',                 // home / hero
+    '/article',          // article/editorial
+    '/gallery',          // art / photography
+    '/travel'            // travel section
+  ];
+
+  // choose the browser you want to test (chromium recommended for HLS with hls.js)
+  const browser = await chromium.launch({ headless: true });
+  const context = await browser.newContext({ viewport: { width: 1280, height: 720 }});
+  const page = await context.newPage();
+
+  for (const p of pages) {
+    try {
+      const url = new URL(p, base).toString();
+      console.log('Visiting', url);
+      await page.goto(url, { waitUntil: 'networkidle' });
+      // wait a little for JS to initialize HLS players
+      await page.waitForTimeout(2000);
+
+      // If there is a <video> element, try to play it muted to capture a running frame
+      const hasVideo = await page.$('video');
+      if (hasVideo) {
+        console.log('Found <video>, attempting playback (muted)...');
+        try {
+          await page.evaluate(() => {
+            const v = document.querySelector('video');
+            if (v) {
+              v.muted = true;
+              // some players expose play() promises
+              const p = v.play();
+              if (p && p.then) p.catch(() => {});
+            }
+          });
+          await page.waitForTimeout(2500);
+        } catch (e) {
+          console.warn('Error starting video playback:', e);
+        }
+      } else {
+        // If embed or iframe exists, just wait a bit for it to render
+        const hasIframe = await page.$('iframe');
+        if (hasIframe) {
+          console.log('Found iframe/embed; waiting for it to load...');
+          await page.waitForTimeout(2000);
+        }
+      }
+
+      const safeName = p === '/' ? 'home' : p.replace(/[^\w-]/g, '_').replace(/^_+/, '');
+      const outPath = path.join(outDir, `${safeName}.png`);
+      await page.screenshot({ path: outPath, fullPage: true });
+      console.log('Saved screenshot:', outPath);
+    } catch (err) {
+      console.error('Error testing page', p, err);
+    }
+  }
+
+  await browser.close();
+  console.log('Playback screenshot run complete.');
+})();
+JS
+
+cat > scripts/run-lighthouse.sh <<'BASH'
+#!/usr/bin/env bash
+# Wrapper to run Lighthouse for the provided URL
+# Usage:
+#   ./scripts/run-lighthouse.sh https://staging.example.com ./lighthouse-report.json
+
+URL=${1:-${STAGING_URL:-}}
+OUT=${2:-lighthouse-report.json}
+
+if [ -z "$URL" ]; then
+  echo "Usage: $0 <url> [out.json]"
+  exit 1
+fi
+
+echo "Running Lighthouse on $URL -> $OUT"
+npx -y lighthouse "$URL" --output=json --output-path="$OUT" --only-categories=performance,accessibility,best-practices || true
+echo "Lighthouse finished (report at $OUT if generated)."
+BASH
+
+chmod +x scripts/subset-fonts.sh scripts/run-lighthouse.sh
+
+git add .github/workflows/verification.yml scripts/subset-fonts.sh scripts/run-playback-test.js scripts/run-lighthouse.sh
+git commit -m "Add verification workflow and helper scripts"
+git push -u origin "$BRANCH"
+
+echo "Files created and pushed to branch: $BRANCH"
+name: Verification CI
+
+on:
+  push:
+    paths:
+      - 'fonts/**'
+      - 'css/**'
+      - 'docs/**'
+      - 'scripts/**'
+      - '.github/workflows/**'
+
+jobs:
+  subset-and-lighthouse:
+    runs-on: ubuntu-latest
+    env:
+      STAGING_URL: ${{ secrets.STAGING_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update && sudo apt-get install -y python3-pip libfreetype6-dev libpng-dev
+          pip3 install --user fonttools
+
+      - name: Install dependencies
+        run: |
+          npm ci || true
+          npm i -g lighthouse@11 playwright@1 || true
+
+      - name: Run font subsetting script (if fonts/source exists)
+        if: ${{ always() }}
+        run: |
+          if [ -d fonts/source ]; then
+            chmod +x scripts/subset-fonts.sh || true
+            ./scripts/subset-fonts.sh
+          else
+            echo "fonts/source not present — skipping subsetting"
+          fi
+
+      - name: Run Lighthouse on staging URL (requires STAGING_URL secret)
+        if: ${{ secrets.STAGING_URL != '' }}
+        run: |
+          echo "Staging URL: $STAGING_URL"
+          npx -y -q lighthouse "$STAGING_URL" --output=json --output-path=./lighthouse-report.json --only-categories=performance,accessibility,best-practices || true
+
+      - name: Archive Lighthouse report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-report
+          path: ./lighthouse-report.json
+
+  playwright-screenshots:
+    runs-on: ubuntu-latest
+    needs: subset-and-lighthouse
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Playwright
+        run: |
+          npm ci || true
+          npx playwright install --with-deps || true
+
+      - name: Run playback screenshot script
+        run: |
+          node scripts/run-playback-test.js || true
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: playback-screenshots
+          path: ./playback-screenshots
+          #!/usr/bin/env bash
+# Subset TTF/OTF fonts found under fonts/source/ into web-friendly .woff2 files under fonts/
+# Requires fonttools (pyftsubset). Installs via pip if not present.
+#
+# Usage:
+#  ./scripts/subset-fonts.sh
+# Outputs:
+#  fonts/<basename>.woff2
+set -euo pipefail
+
+# unicode ranges to keep (basic Latin + Latin-1 + Latin Extended-A/B)
+UNICODES="U+0020-007E,U+00A0-00FF,U+0100-024F"
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SRC_DIR="$SCRIPT_DIR/../fonts/source"
+OUT_DIR="$SCRIPT_DIR/../fonts"
+
+mkdir -p "$OUT_DIR"
+if ! command -v pyftsubset >/dev/null 2>&1; then
+  echo "pyftsubset not found; attempting to install fonttools..."
+  pip3 install --user fonttools
+  if ! command -v pyftsubset >/dev/null 2>&1; then
+    echo "pyftsubset still not available. Please install fonttools (pip install fonttools)." >&2
+    exit 1
+  fi
+fi
+
+shopt -s nullglob
+for src in "$SRC_DIR"/*.{ttf,otf,TTF,OTF}; do
+  [ -e "$src" ] || continue
+  base="$(basename "$src")"
+  name="${base%.*}"
+  out="$OUT_DIR/${name}.woff2"
+  echo "Subsetting $src -> $out"
+  # Use a conservative subset covering common Latin ranges and preserve layout features
+  pyftsubset "$src" \
+    --output-file="$out" \
+    --flavor=woff2 \
+    --with-zopfli \
+    --layout-features='*' \
+    --unicodes="$UNICODES" \
+    --recommended-glyphs \
+    --notdef-glyph \
+    --glyph-names \
+    --drop-tables= \
+    || echo "pyftsubset failed for $src (continuing)"
+done
+
+echo "Done. Please check $OUT_DIR for .woff2 files"
+// Playwright script to navigate pages, try to start video playback, collect screenshots.
+// Usage:
+//   STAGING_URL="https://staging.example.com" node scripts/run-playback-test.js
+//
+// It will write screenshots to ./playback-screenshots/
+
+const fs = require('fs');
+const path = require('path');
+const { chromium } = require('playwright');
+
+(async () => {
+  const base = process.env.STAGING_URL || process.argv[2] || 'http://localhost:3000';
+  const outDir = path.resolve(process.cwd(), 'playback-screenshots');
+  if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+
+  // pages to test (adjust to your routes)
+  const pages = [
+    '/',                 // home / hero
+    '/article',          // article/editorial
+    '/gallery',          // art / photography
+    '/travel'            // travel section
+  ];
+
+  // choose the browser you want to test (chromium recommended for HLS with hls.js)
+  const browser = await chromium.launch({ headless: true });
+  const context = await browser.newContext({ viewport: { width: 1280, height: 720 }});
+  const page = await context.newPage();
+
+  for (const p of pages) {
+    try {
+      const url = new URL(p, base).toString();
+      console.log('Visiting', url);
+      await page.goto(url, { waitUntil: 'networkidle' });
+      // wait a little for JS to initialize HLS players
+      await page.waitForTimeout(2000);
+
+      // If there is a <video> element, try to play it muted to capture a running frame
+      const hasVideo = await page.$('video');
+      if (hasVideo) {
+        console.log('Found <video>, attempting playback (muted)...');
+        try {
+          await page.evaluate(() => {
+            const v = document.querySelector('video');
+            if (v) {
+              v.muted = true;
+              // some players expose play() promises
+              const p = v.play();
+              if (p && p.then) p.catch(() => {});
+            }
+          });
+          await page.waitForTimeout(2500);
+        } catch (e) {
+          console.warn('Error starting video playback:', e);
+        }
+      } else {
+        // If embed or iframe exists, just wait a bit for it to render
+        const hasIframe = await page.$('iframe');
+        if (hasIframe) {
+          console.log('Found iframe/embed; waiting for it to load...');
+          await page.waitForTimeout(2000);
+        }
+      }
+
+      const safeName = p === '/' ? 'home' : p.replace(/[^\w-]/g, '_').replace(/^_+/, '');
+      const outPath = path.join(outDir, `${safeName}.png`);
+      await page.screenshot({ path: outPath, fullPage: true });
+      console.log('Saved screenshot:', outPath);
+    } catch (err) {
+      console.error('Error testing page', p, err);
+    }
+  }
+
+  await browser.close();
+  console.log('Playback screenshot run complete.');
+})();
+#!/usr/bin/env bash
+# Wrapper to run Lighthouse for the provided URL
+# Usage:
+#   ./scripts/run-lighthouse.sh https://staging.example.com ./lighthouse-report.json
+
+URL=${1:-${STAGING_URL:-}}
+OUT=${2:-lighthouse-report.json}
+
+if [ -z "$URL" ]; then
+  echo "Usage: $0 <url> [out.json]"
+  exit 1
+fi
+
+echo "Running Lighthouse on $URL -> $OUT"
+npx -y lighthouse "$URL" --output=json --output-path="$OUT" --only-categories=performance,accessibility,best-practices || true
+echo "Lighthouse finished (report at $OUT if generated)."
 
       # Publish your package using your security token
       - run: npm publish
