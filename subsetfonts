@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Subset TTF/OTF fonts found under fonts/source/ into web-friendly .woff2 files under fonts/
+# Requires fonttools (pyftsubset). Installs via pip if not present.
+#
+# Usage:
+#  ./scripts/subset-fonts.sh
+# Outputs:
+#  fonts/<basename>.woff2
+set -euo pipefail
+
+# unicode ranges to keep (basic Latin + Latin-1 + Latin Extended-A/B)
+UNICODES="U+0020-007E,U+00A0-00FF,U+0100-024F"
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SRC_DIR="$SCRIPT_DIR/../fonts/source"
+OUT_DIR="$SCRIPT_DIR/../fonts"
+
+mkdir -p "$OUT_DIR"
+if ! command -v pyftsubset >/dev/null 2>&1; then
+  echo "pyftsubset not found; attempting to install fonttools..."
+  pip3 install --user fonttools
+  if ! command -v pyftsubset >/dev/null 2>&1; then
+    echo "pyftsubset still not available. Please install fonttools (pip install fonttools)." >&2
+    exit 1
+  fi
+fi
+
+shopt -s nullglob
+for src in "$SRC_DIR"/*.{ttf,otf,TTF,OTF}; do
+  [ -e "$src" ] || continue
+  base="$(basename "$src")"
+  name="${base%.*}"
+  out="$OUT_DIR/${name}.woff2"
+  echo "Subsetting $src -> $out"
+  # Use a conservative subset covering common Latin ranges and preserve layout features
+  pyftsubset "$src" \
+    --output-file="$out" \
+    --flavor=woff2 \
+    --with-zopfli \
+    --layout-features='*' \
+    --unicodes="$UNICODES" \
+    --recommended-glyphs \
+    --notdef-glyph \
+    --glyph-names \
+    --drop-tables= \
+    || echo "pyftsubset failed for $src (continuing)"
+done
+
+echo "Done. Please check $OUT_DIR for .woff2 files"
