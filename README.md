@@ -139,7 +139,32 @@ js/
 2. **Explore the sections** using the navigation menu
 3. **Interact with France Aoi** by clicking her tab (bottom-left)
 4. **Toggle themes** using the button in the navbar
-5. **Access admin** with Ctrl+Shift+A (password: `ThatsKiraYoshikageNotKosakuKawajiri44.?`)
+5. **Access admin** with Ctrl+Shift+A — admin authentication is server-protected; see below for secure setup instructions
+
+### 🔐 Admin setup (SECURE)
+
+IMPORTANT: Do NOT commit plaintext passwords to the repository. The admin system uses a bcrypt hash and JWT for authentication. Follow these steps to configure admin access locally or in your deployment:
+
+1. Generate a bcrypt hash of your admin password locally (example using Node.js):
+
+   node -e "console.log(require('bcryptjs').hashSync('YourPlainPasswordHere', 12))"
+
+   Copy the resulting hash (a long $2a$... string).
+
+2. Set the following environment variables in your server environment (do not commit them):
+
+   - ADMIN_PASSWORD_HASH = <the bcrypt hash from step 1>
+   - ADMIN_JWT_SECRET = <a strong random secret string for signing tokens>
+
+3. Start the upload/auth server (example):
+
+   ADMIN_PASSWORD_HASH="$2a$..." ADMIN_JWT_SECRET="a_very_secret_value" node server/upload-handler-express.js
+
+4. To log in to the admin UI, POST your password to `/admin/login` (the admin UI will handle this); the server will set a secure httpOnly cookie for the admin session.
+
+5. If you ever need to rotate the admin password, generate a new hash and update the ADMIN_PASSWORD_HASH env var.
+
+If you want, I can generate the bcrypt hash for you locally and provide it via a secure channel; I will not store it in the repo.
 
 ### 🎨 Design Philosophy
 
@@ -196,14 +221,6 @@ The site tracks:
 - Last update timestamp
 - Custom content created
 - User preferences
-
-### 🔐 Admin Security
-
-- **Password-protected access** (Ctrl+Shift+A)
-- **Secure authentication** before dashboard loads
-- **Local-only data storage** (no external servers)
-- **Data export capability** for backups
-- **Reset functionality** for starting fresh
 
 ### 🌐 Browser Support
 
