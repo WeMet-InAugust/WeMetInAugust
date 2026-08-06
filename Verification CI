@@ -1,0 +1,84 @@
+name: Verification CI
+
+on:
+  push:
+    paths:
+      - 'fonts/**'
+      - 'css/**'
+      - 'docs/**'
+      - 'scripts/**'
+      - '.github/workflows/**'
+
+jobs:
+  subset-and-lighthouse:
+    runs-on: ubuntu-latest
+    env:
+      STAGING_URL: ${{ secrets.STAGING_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update && sudo apt-get install -y python3-pip libfreetype6-dev libpng-dev
+          pip3 install --user fonttools
+
+      - name: Install dependencies
+        run: |
+          npm ci || true
+          npm i -g lighthouse@11 playwright@1 || true
+
+      - name: Run font subsetting script (if fonts/source exists)
+        if: ${{ always() }}
+        run: |
+          if [ -d fonts/source ]; then
+            chmod +x scripts/subset-fonts.sh || true
+            ./scripts/subset-fonts.sh
+          else
+            echo "fonts/source not present — skipping subsetting"
+          fi
+
+      - name: Run Lighthouse on staging URL (requires STAGING_URL secret)
+        if: ${{ secrets.STAGING_URL != '' }}
+        run: |
+          echo "Staging URL: $STAGING_URL"
+          npx -y -q lighthouse "$STAGING_URL" --output=json --output-path=./lighthouse-report.json --only-categories=performance,accessibility,best-practices || true
+
+      - name: Archive Lighthouse report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-report
+          path: ./lighthouse-report.json
+
+  playwright-screenshots:
+    runs-on: ubuntu-latest
+    needs: subset-and-lighthouse
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Playwright
+        run: |
+          npm ci || true
+          npx playwright install --with-deps || true
+
+      - name: Run playback screenshot script
+        run: |
+          node scripts/run-playback-test.js || true
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: playback-screenshots
+          path: ./playback-screenshots
