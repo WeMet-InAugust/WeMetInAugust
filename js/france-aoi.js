@@ -1,5 +1,5 @@
 // js/france-aoi.js
-// France Aoi front-end prototype v2: expanded personality, typing indicator, quick replies, timestamps
+// France Aoi front-end prototype v3: add audio cues (WebAudio), mute control, and bark timing
 
 (function(){
   const SCALE = 4; // 16px -> 64px
@@ -35,6 +35,23 @@
     6: '#1fb0ff',
     7: '#0047AB'
   };
+
+  // AUDIO: lightweight WebAudio chimes and bark (no external assets)
+  const audioState = { muted: localStorage.getItem('aoi-muted') === '1' };
+  let audioCtx = null;
+  function ensureAudio(){ if(audioState.muted) return null; if(audioCtx) return audioCtx; try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); return audioCtx; }catch(e){ return null; } }
+
+  function playTone(freq, type='sine', dur=0.12, gain=0.12){ const ctx = ensureAudio(); if(!ctx) return; const o = ctx.createOscillator(); const g = ctx.createGain(); o.type = type; o.frequency.setValueAtTime(freq, ctx.currentTime); g.gain.setValueAtTime(gain, ctx.currentTime); o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + dur); }
+
+  function playChime(kind){ if(audioState.muted) return; const ctx = ensureAudio(); if(!ctx) return; if(kind === 'open'){ playTone(740, 'sine', 0.08, 0.06); setTimeout(()=>playTone(1046, 'sine', 0.12, 0.08), 90); }
+    else if(kind === 'close'){ playTone(440, 'sine', 0.12, 0.08); }
+    else if(kind === 'notify'){ playTone(880, 'triangle', 0.06, 0.06); }
+    else if(kind === 'typing'){ playTone(1200, 'sine', 0.03, 0.02); }
+  }
+
+  function playBark(){ if(audioState.muted) return; const ctx = ensureAudio(); if(!ctx) return; const dur = 0.12; const bufferSize = ctx.sampleRate * dur; const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate); const data = buffer.getChannelData(0); for(let i=0;i<bufferSize;i++){ data[i] = (Math.random()*2-1) * Math.exp(-i/(bufferSize/6)); } const src = ctx.createBufferSource(); const g = ctx.createGain(); src.buffer = buffer; g.gain.setValueAtTime(0.18, ctx.currentTime); src.connect(g); g.connect(ctx.destination); src.start(); }
+
+  function toggleMute(on){ audioState.muted = on; localStorage.setItem('aoi-muted', on ? '1':'0'); if(!on) { try{ ensureAudio().resume(); }catch(e){} } }
 
   function createCanvas(w,h){ const c = document.createElement('canvas'); c.width = w; c.height = h; c.style.width = (w) + 'px'; c.style.height = (h) + 'px'; return c; }
 
@@ -87,11 +104,11 @@
     avatarCanvas.style.width = AVATAR_SIZE + 'px'; avatarCanvas.style.height = AVATAR_SIZE + 'px'; avatarCanvas.style.imageRendering = 'pixelated';
     tab.appendChild(avatarCanvas);
 
-    const scene = document.createElement('div'); scene.className = 'france-scene'; const sceneCanvas = createCanvas(160,120); scene.appendChild(sceneCanvas);
+    const scene = document.createElement('div'); scene.className = 'france-scene'; const sceneCanvas = createCanvas(200,150); scene.appendChild(sceneCanvas);
 
     const panel = document.createElement('div'); panel.className = 'france-aoi-panel hidden';
     panel.innerHTML = `
-      <div class="header"><div style="flex:1"><h4 style="margin:0">France Aoi</h4><small class="muted">Tsundere guide</small></div><div style="display:flex;gap:6px;align-items:center"><select id="aoi-personality"><option value="tsundere">Tsundere</option><option value="librarian">Librarian</option><option value="friendly">Friendly</option></select><button id="aoi-close" aria-label="Close">×</button></div></div>
+      <div class="header"><div style="flex:1"><h4 style="margin:0">France Aoi</h4><small class="muted">Tsundere guide</small></div><div style="display:flex;gap:6px;align-items:center"><select id="aoi-personality"><option value="tsundere">Tsundere</option><option value="librarian">Librarian</option><option value="friendly">Friendly</option></select><button id="aoi-mute" aria-label="Mute">🔊</button><button id="aoi-close" aria-label="Close">×</button></div></div>
       <div class="content" id="aoi-content"></div>
       <div class="quick-replies" id="aoi-quick"></div>
       <div class="input-row"><input id="aoi-input" placeholder="Ask France Aoi..." aria-label="Ask France Aoi"/><button id="aoi-send">Say</button></div>
@@ -113,25 +130,48 @@
     let bob = 0; let bobDir = 1;
     setInterval(()=>{ bob += 0.2 * bobDir; if(Math.abs(bob) > 2) bobDir *= -1; tab.style.transform = `translateY(${bob}px)`; }, 100);
 
-    // scene draw
+    // scene draw + occasional bark
     const sctx = sceneCanvas.getContext('2d');
-    function drawScene(){ const hour = new Date().getHours(); const night = hour < 7 || hour >= 19; const bg1 = night ? '#04102a' : '#bfe7ff'; const bg2 = night ? '#001422' : '#ffffff'; const g = sctx.createLinearGradient(0,0,0,120); g.addColorStop(0,bg1); g.addColorStop(1,bg2); sctx.fillStyle = g; sctx.fillRect(0,0,160,120); sctx.fillStyle = '#3b2414'; sctx.fillRect(20,60,8,40); sctx.fillStyle = '#12421a'; sctx.beginPath(); sctx.arc(24,52,28,0,Math.PI*2); sctx.fill(); const t = Date.now()/400; const px = 110 + Math.sin(t)*6, py = 86 + Math.cos(t/1.5)*2; sctx.fillStyle = '#c45a2a'; sctx.beginPath(); sctx.arc(px,py,6,0,Math.PI*2); sctx.fill(); sctx.fillStyle = '#fff'; sctx.fillRect(60,78,14,18); }
+    let lastBark = 0;
+    function drawScene(){
+      const hour = new Date().getHours();
+      const night = hour < 7 || hour >= 19;
+      const bg1 = night ? '#04102a' : '#bfe7ff';
+      const bg2 = night ? '#001422' : '#ffffff';
+      const g = sctx.createLinearGradient(0,0,0,150); g.addColorStop(0,bg1); g.addColorStop(1,bg2); sctx.fillStyle = g; sctx.fillRect(0,0,200,150);
+      // tree
+      sctx.fillStyle = '#3b2414'; sctx.fillRect(26,70,8,50);
+      sctx.fillStyle = '#12421a'; sctx.beginPath(); sctx.arc(30,58,36,0,Math.PI*2); sctx.fill();
+      // poodle animate
+      const t = Date.now()/400;
+      const px = 140 + Math.sin(t)*6; const py = 110 + Math.cos(t/1.5)*2;
+      sctx.fillStyle = '#c45a2a'; sctx.beginPath(); sctx.arc(px,py,6,0,Math.PI*2); sctx.fill();
+      // small chance to bark every ~6-12s
+      if(Date.now() - lastBark > 6000 && Math.random() < 0.008){ playBark(); lastBark = Date.now(); }
+      // small Aoi sitter
+      sctx.fillStyle = '#fff'; sctx.fillRect(70,98,18,20);
+    }
     setInterval(drawScene, 1000/15); drawScene();
 
     // drag logic
     let dragging = false; let startX=0,startY=0, ox=16, oy=16; const storeKey = 'aoi-tab-pos'; const saved = localStorage.getItem(storeKey);
-    if(saved){ try{ const p = JSON.parse(saved); tab.style.left = p.x + 'px'; tab.style.top = p.y + 'px'; scene.style.left = (p.x) + 'px'; scene.style.top = (p.y + 80) + 'px'; }catch(e){} }
+    if(saved){ try{ const p = JSON.parse(saved); tab.style.left = p.x + 'px'; tab.style.top = p.y + 'px'; scene.style.left = (p.x) + 'px'; scene.style.top = (p.y + 110) + 'px'; }catch(e){} }
 
-    tab.addEventListener('pointerdown', (e)=>{ dragging = true; startX = e.clientX; startY = e.clientY; ox = parseInt(tab.style.left||16,10); oy = parseInt(tab.style.top||16,10); tab.setPointerCapture(e.pointerId); });
-    window.addEventListener('pointermove',(e)=>{ if(!dragging) return; const nx = ox + (e.clientX - startX); const ny = oy + (e.clientY - startY); tab.style.left = nx + 'px'; tab.style.top = ny + 'px'; scene.style.left = nx + 'px'; scene.style.top = (ny + 80) + 'px'; });
+    tab.addEventListener('pointerdown', (e)=>{ dragging = true; startX = e.clientX; startY = e.clientY; ox = parseInt(tab.style.left||20,10); oy = parseInt(tab.style.top||80,10); tab.setPointerCapture(e.pointerId); });
+    window.addEventListener('pointermove',(e)=>{ if(!dragging) return; const nx = ox + (e.clientX - startX); const ny = oy + (e.clientY - startY); tab.style.left = nx + 'px'; tab.style.top = ny + 'px'; scene.style.left = nx + 'px'; scene.style.top = (ny + 110) + 'px'; });
     window.addEventListener('pointerup',(e)=>{ if(!dragging) return; dragging=false; try{ localStorage.setItem(storeKey, JSON.stringify({ x: parseInt(tab.style.left,10), y: parseInt(tab.style.top,10) })); }catch(e){} });
 
-    // toggle panel
-    const closeBtn = panel.querySelector('#aoi-close'); closeBtn.addEventListener('click', ()=>panel.classList.add('hidden'));
-    tab.addEventListener('click',(e)=>{ panel.classList.toggle('hidden'); });
+    // toggle panel with audio cues
+    const closeBtn = panel.querySelector('#aoi-close'); const muteBtn = panel.querySelector('#aoi-mute'); const personaSelect = panel.querySelector('#aoi-personality');
+    function setMuteButton(){ muteBtn.textContent = audioState.muted ? '🔇' : '🔊'; }
+    setMuteButton();
+    muteBtn.addEventListener('click', ()=>{ toggleMute(!audioState.muted); setMuteButton(); });
+
+    closeBtn.addEventListener('click', ()=>{ panel.classList.add('hidden'); playChime('close'); });
+    tab.addEventListener('click',(e)=>{ const wasHidden = panel.classList.contains('hidden'); panel.classList.toggle('hidden'); if(!wasHidden) { playChime('close'); } else { playChime('open'); } });
 
     // chat UI
-    const content = panel.querySelector('#aoi-content'); const input = panel.querySelector('#aoi-input'); const sendBtn = panel.querySelector('#aoi-send'); const typing = panel.querySelector('#aoi-typing'); const quick = panel.querySelector('#aoi-quick'); const personaSelect = panel.querySelector('#aoi-personality');
+    const content = panel.querySelector('#aoi-content'); const input = panel.querySelector('#aoi-input'); const sendBtn = panel.querySelector('#aoi-send'); const typing = panel.querySelector('#aoi-typing'); const quick = panel.querySelector('#aoi-quick');
 
     // curated tsundere-friendly scripts (expanded to 20-ish)
     const SCRIPTS = [
@@ -165,8 +205,8 @@
 
     function escapeHtml(s){ return (s+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-    // server-backed ask with typing indicator
-    async function askAndReply(text){ typing.style.display='block'; try{ const reply = await askServerAoi(text); typing.style.display='none'; appendMessage('aoi', reply); }catch(e){ typing.style.display='none'; appendMessage('aoi', "I'm sorry — something went wrong."); }
+    // server-backed ask with typing indicator + typing sound
+    async function askAndReply(text){ typing.style.display='block'; playChime('typing'); try{ const reply = await askServerAoi(text); typing.style.display='none'; appendMessage('aoi', reply); playChime('notify'); }catch(e){ typing.style.display='none'; appendMessage('aoi', "I'm sorry — something went wrong."); }
     }
 
     // initial greeting
@@ -176,10 +216,7 @@
     input.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ e.preventDefault(); sendBtn.click(); } });
 
     // personality select effect (client-only flavor changes)
-    personaSelect.addEventListener('change', ()=>{ localStorage.setItem('aoi-personality', personaSelect.value); const tone = personaSelect.value; // minor effect on quick replies
-      if(tone==='tsundere') quick.querySelectorAll('button').forEach(b=>b.style.opacity='1');
-      else quick.querySelectorAll('button').forEach(b=>b.style.opacity='0.9');
-    });
+    personaSelect.addEventListener('change', ()=>{ localStorage.setItem('aoi-personality', personaSelect.value); const tone = personaSelect.value; if(tone==='tsundere') quick.querySelectorAll('button').forEach(b=>b.style.opacity='1'); else quick.querySelectorAll('button').forEach(b=>b.style.opacity='0.9'); });
 
     return { tab, panel, scene };
   }
