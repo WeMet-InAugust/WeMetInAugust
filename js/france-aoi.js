@@ -1,5 +1,5 @@
 // js/france-aoi.js
-// France Aoi front-end prototype v4: client-side animated frames, smooth outfit transitions, reply cache
+// France Aoi front-end prototype v5: add extra expressions (wink, smirk), outfit accents, random expression scheduler
 
 (function(){
   const SCALE = 4; // 16px -> 64px
@@ -43,13 +43,19 @@
   function lerp(a,b,t){ return Math.round(a + (b-a)*t); }
   function lerpColor(aHex,bHex,t){ const a = hexToRgb(aHex); const b = hexToRgb(bHex); return rgbToHex(lerp(a[0],b[0],t), lerp(a[1],b[1],t), lerp(a[2],b[2],t)); }
 
+  function shade(hex, amount){ const c = hexToRgb(hex); return rgbToHex(Math.max(0,Math.min(255,c[0]+amount)), Math.max(0,Math.min(255,c[1]+amount)), Math.max(0,Math.min(255,c[2]+amount))); }
+
   // Avatar animation state
   const avatarState = {
     outfitColor: '#0047AB',
+    outfitAccent: null,
+    outfitStart: '#0047AB',
     outfitTarget: '#0047AB',
     outfitAnimStart: 0,
     outfitAnimDur: 400,
     blinkUntil: 0,
+    winkUntil: 0,
+    smileUntil: 0,
     tiltUntil: 0,
     frame: 0
   };
@@ -57,17 +63,18 @@
   // reply cache (client-side) to speed up repeat replies
   const replyCache = new Map();
 
-  // small set of outfits (64px primary colors)
+  // small set of outfits (64px primary colors) with optional accent
   const OUTFITS = [
-    { id: 'default', color: '#0047AB', label: 'Default' },
-    { id: 'winter', color: '#8eb6ff', label: 'Winter Coat' },
-    { id: 'spring', color: '#ffd1dc', label: 'Spring Cardigan' },
-    { id: 'summer', color: '#ffdf7a', label: 'Summer Casual' },
-    { id: 'autumn', color: '#c88c6a', label: 'Autumn Sweater' },
-    { id: 'psg', color: '#0015B3', label: 'PSG Jersey' }
+    { id: 'default', color: '#0047AB', accent: null, label: 'Default' },
+    { id: 'winter', color: '#8eb6ff', accent: '#ffffff', label: 'Winter Coat' },
+    { id: 'spring', color: '#ffd1dc', accent: '#ffffff', label: 'Spring Cardigan' },
+    { id: 'summer', color: '#ffdf7a', accent: '#ffffff', label: 'Summer Casual' },
+    { id: 'autumn', color: '#c88c6a', accent: '#fff1e6', label: 'Autumn Sweater' },
+    { id: 'psg', color: '#0015B3', accent: '#ffffff', label: 'PSG Jersey' },
+    { id: 'france', color: '#002868', accent: '#ffffff', label: 'France Tricolor' }
   ];
 
-  // AUDIO: lightweight WebAudio (already in v3) - reused helpers
+  // AUDIO: lightweight WebAudio (reused helpers)
   const audioState = { muted: localStorage.getItem('aoi-muted') === '1' };
   let audioCtx = null;
   function ensureAudio(){ if(audioState.muted) return null; if(audioCtx) return audioCtx; try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); return audioCtx; }catch(e){ return null; } }
@@ -78,36 +85,54 @@
 
   function createCanvas(w,h){ const c = document.createElement('canvas'); c.width = w; c.height = h; c.style.width = (w) + 'px'; c.style.height = (h) + 'px'; return c; }
 
-  function drawAvatarFrame(ctx, outfitColor, frame){
-    // frame: 'neutral' | 'blink' | 'tilt' | 'smile' etc.
+  // draw frame with support for wink/smile/tilt and accent stripe
+  function drawAvatarFrame(ctx, outfitColor, frame, accent){
     ctx.clearRect(0,0,PIXEL_SIZE*SCALE,PIXEL_SIZE*SCALE);
     for(let y=0;y<PIXEL_SIZE;y++){
       for(let x=0;x<PIXEL_SIZE;x++){
         const v = PIXEL_MAP[y] && PIXEL_MAP[y][x] ? PIXEL_MAP[y][x] : 0;
         let col = COLORS[v];
         if(v===7) col = outfitColor || COLORS[7];
+
         // eyes/mouth tweaks per frame
         if(frame === 'blink' && y===8 && x>=6 && x<=9){ col = COLORS[5]; }
+        if(frame === 'wink' && y===8 && x===7){ col = COLORS[5]; }
         if(frame === 'tilt'){
-          // slight shading to simulate tilt (shift some hair pixels darker)
           if(v===6 && (x+y)%7===0) col = shade(col, -12);
         }
+
         if(col && col !== 'rgba(0,0,0,0)'){
           ctx.fillStyle = col;
           ctx.fillRect(x*SCALE, y*SCALE, SCALE, SCALE);
         }
       }
     }
-    // optional small mouth for smile frame
+
+    // accent stripe: draw a small tricolor or accent band across chest if accent supplied
+    if(accent){
+      // draw 3 horizontal pixels across row 12
+      const bandY = 12;
+      for(let i=5;i<=10;i++){
+        ctx.fillStyle = accent;
+        ctx.fillRect(i*SCALE, bandY*SCALE, SCALE, SCALE);
+      }
+    }
+
+    // smile mouth
     if(frame === 'smile'){
       ctx.fillStyle = '#000000'; ctx.fillRect(7*SCALE,11*SCALE,2*SCALE,1*SCALE); ctx.fillRect(9*SCALE,11*SCALE,2*SCALE,1*SCALE);
     }
   }
 
-  function shade(hex, percent){ const rgb = hexToRgb(hex); const r = Math.max(0, Math.min(255, Math.round(rgb[0] + percent))); const g = Math.max(0, Math.min(255, Math.round(rgb[1] + percent))); const b = Math.max(0, Math.min(255, Math.round(rgb[2] + percent))); return rgbToHex(r,g,b); }
-
-  // Animated outfit transition (lerp color)
-  function animateOutfitTo(targetHex, duration=400){ avatarState.outfitAnimStart = performance.now(); avatarState.outfitStart = avatarState.outfitColor; avatarState.outfitTarget = targetHex; avatarState.outfitAnimDur = duration; }
+  // Animated outfit transition (lerp color) — target can be hex string or object {color,accent}
+  function animateOutfitTo(target, duration=400){
+    avatarState.outfitAnimStart = performance.now();
+    avatarState.outfitStart = avatarState.outfitColor;
+    if(typeof target === 'string'){
+      avatarState.outfitTarget = target; avatarState.outfitAccent = null;
+    }else{ avatarState.outfitTarget = target.color || avatarState.outfitTarget; avatarState.outfitAccent = target.accent || null; }
+    avatarState.outfitAnimDur = duration;
+  }
 
   // local responder + server ask with cache
   async function askServerAoi(message){
@@ -146,25 +171,41 @@
     const ctx = avatarCanvas.getContext('2d');
 
     // initial draw
-    drawAvatarFrame(ctx, avatarState.outfitColor, 'neutral');
+    drawAvatarFrame(ctx, avatarState.outfitColor, 'neutral', avatarState.outfitAccent);
 
     // set up swatches
-    const swatches = panel.querySelector('#aoi-swatches'); OUTFITS.forEach(o=>{ const b = document.createElement('button'); b.className='swatch'; b.title = o.label; b.style.width='22px'; b.style.height='22px'; b.style.borderRadius='6px'; b.style.border='1px solid rgba(0,0,0,0.06)'; b.style.background=o.color; b.addEventListener('click', ()=>{ animateOutfitTo(o.color, 550); }); swatches.appendChild(b); });
+    const swatches = panel.querySelector('#aoi-swatches'); OUTFITS.forEach(o=>{ const b = document.createElement('button'); b.className='swatch'; b.title = o.label; b.style.width='22px'; b.style.height='22px'; b.style.borderRadius='6px'; b.style.border='1px solid rgba(0,0,0,0.06)'; b.style.background=o.color; b.addEventListener('click', ()=>{ animateOutfitTo(o, 550); }); swatches.appendChild(b); });
 
     // avatar animation loop
     function avatarLoop(now){ // outfit transition
-      if(avatarState.outfitAnimStart){ const t = Math.min(1, (now - avatarState.outfitAnimStart) / avatarState.outfitAnimDur); avatarState.outfitColor = lerpColor(avatarState.outfitStart, avatarState.outfitTarget, t); if(t>=1) avatarState.outfitAnimStart = 0; }
-      // choose frame: blink if blinkUntil > now, else tilt until tiltUntil
-      const frame = Date.now() < avatarState.blinkUntil ? 'blink' : (Date.now() < avatarState.tiltUntil ? 'tilt' : 'neutral');
-      drawAvatarFrame(ctx, avatarState.outfitColor, frame);
+      if(avatarState.outfitAnimStart){ const t = Math.min(1, (now - avatarState.outfitAnimStart) / avatarState.outfitAnimDur); avatarState.outfitColor = lerpColor(avatarState.outfitStart, avatarState.outfitTarget, t); if(t>=1){ avatarState.outfitAnimStart = 0; }
+      }
+      // choose frame: priority wink, smile, blink, tilt
+      const nowTs = Date.now();
+      let frame = 'neutral';
+      if(nowTs < avatarState.winkUntil) frame = 'wink';
+      else if(nowTs < avatarState.smileUntil) frame = 'smile';
+      else if(nowTs < avatarState.blinkUntil) frame = 'blink';
+      else if(nowTs < avatarState.tiltUntil) frame = 'tilt';
+      drawAvatarFrame(ctx, avatarState.outfitColor, frame, avatarState.outfitAccent);
       requestAnimationFrame(avatarLoop);
     }
     requestAnimationFrame(avatarLoop);
 
-    // scene draw and barking earlier similar to v3
+    // random expression scheduler: occasional wink/smile/blink/tilt
+    setInterval(()=>{
+      const r = Math.random();
+      const now = Date.now();
+      if(r < 0.10){ avatarState.blinkUntil = now + 180; }
+      else if(r < 0.14){ avatarState.winkUntil = now + 240; }
+      else if(r < 0.16){ avatarState.smileUntil = now + 800; }
+      else if(r < 0.20){ avatarState.tiltUntil = now + 700; }
+    }, 1200);
+
+    // scene draw and barking similar to v4
     const sctx = sceneCanvas.getContext('2d'); let lastBark=0;
-    function drawScene(){ const hour=new Date().getHours(); const night = hour<7||hour>=19; const bg1=night?'#04102a':'#bfe7ff'; const bg2=night?'#001422':'#ffffff'; const g=sctx.createLinearGradient(0,0,0,150); g.addColorStop(0,bg1); g.addColorStop(1,bg2); sctx.fillStyle=g; sctx.fillRect(0,0,200,150); sctx.fillStyle='#3b2414'; sctx.fillRect(26,70,8,50); sctx.fillStyle='#12421a'; sctx.beginPath(); sctx.arc(30,58,36,0,Math.PI*2); sctx.fill(); const t=Date.now()/400; const px=140+Math.sin(t)*6; const py=110+Math.cos(t/1.5)*2; sctx.fillStyle='#c45a2a'; sctx.beginPath(); sctx.arc(px,py,6,0,Math.PI*2); sctx.fill(); if(Date.now()-lastBark>6000 && Math.random()<0.008){ playBark(); lastBark=Date.now(); } sctx.fillStyle='#fff'; sctx.fillRect(70,98,18,20); }
-    setInterval(drawScene, 1000/15); drawScene();
+    function drawScene(){ const hour=new Date().getHours(); const night = hour<7||hour>=19; const bg1=night?'#04102a':'#bfe7ff'; const bg2=night?'#001422':'#ffffff'; const g=sctx.createLinearGradient(0,0,0,150); g.addColorStop(0,bg1); g.addColorStop(1,bg2); sctx.fillStyle=g; sctx.fillRect(0,0,200,150); sctx.fillStyle='#3b2414'; sctx.fillRect(26,70,8,50); sctx.fillStyle='#12421a'; sctx.beginPath(); sctx.arc(30,58,36,0,Math.PI*2); sctx.fill(); const t=Date.now()/400; const px=140+Math.sin(t)*6; const py=110+Math.cos(t/1.5)*2; sctx.fillStyle='#c45a2a'; sctx.beginPath(); sctx.arc(px,py,6,0,Math.PI*2); sctx.fill(); if(Date.now()-lastBark>6000 && Math.random()<0.01){ playBark(); lastBark=Date.now(); } sctx.fillStyle='#fff'; sctx.fillRect(70,98,18,20); }
+    setInterval(drawScene, 1000/18); drawScene();
 
     // drag logic (unchanged)
     let dragging=false; let startX=0,startY=0,ox=20,oy=80; const storeKey='aoi-tab-pos'; const saved=localStorage.getItem(storeKey); if(saved){ try{ const p=JSON.parse(saved); tab.style.left=p.x+'px'; tab.style.top=p.y+'px'; scene.style.left=(p.x)+'px'; scene.style.top=(p.y+110)+'px'; }catch(e){} }
@@ -202,5 +243,5 @@
   function detectSeason(){ const m=new Date().getMonth()+1; if(m>=12||m<=1) return 'winter'; if(m>=2&&m<=3) return 'winter'; if(m>=4&&m<=6) return 'spring'; if(m>=7&&m<=9) return 'summer'; return 'autumn'; }
 
   // Init: set initial outfit color from season and create tab
-  document.addEventListener('DOMContentLoaded', ()=>{ try{ avatarState.outfitColor = currentOutfitColor(); avatarState.outfitTarget = avatarState.outfitColor; createAoiTab(); }catch(e){ console.error('France Aoi init error', e); } });
+  document.addEventListener('DOMContentLoaded', ()=>{ try{ avatarState.outfitColor = currentOutfitColor(); avatarState.outfitTarget = avatarState.outfitColor; avatarState.outfitAccent = null; createAoiTab(); }catch(e){ console.error('France Aoi init error', e); } });
 })();
