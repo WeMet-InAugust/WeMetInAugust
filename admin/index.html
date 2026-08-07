@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin — We Met In August?!</title>
+  <link rel="stylesheet" href="/admin/style.css">
+</head>
+<body>
+  <main class="admin-root">
+    <section class="login" id="login-section">
+      <h2>Admin login</h2>
+      <p>Enter your password to unlock the private dashboard.</p>
+      <input id="admin-password" type="password" placeholder="Password" aria-label="Admin password" />
+      <button id="login-btn">Unlock</button>
+      <div id="login-msg" class="muted"></div>
+    </section>
+
+    <section class="dashboard hidden" id="dashboard">
+      <header>
+        <h2>Admin Dashboard</h2>
+        <button id="logout-btn" class="danger">Logout</button>
+      </header>
+
+      <section class="uploader">
+        <h3>Upload media (admin only)</h3>
+        <input id="file-input" type="file" accept="video/*" />
+        <button id="start-upload">Start Upload</button>
+        <div id="upload-status" class="muted">No upload yet</div>
+      </section>
+
+      <section class="admin-actions">
+        <h3>Actions</h3>
+        <button id="clear-cache">Clear frontend cache</button>
+        <button id="export-data">Export site JSON</button>
+      </section>
+
+      <section class="notes">
+        <h4>Notes</h4>
+        <ul>
+          <li>Uploads use chunked API at /api/uploads/chunk (admin protected).</li>
+          <li>After uploading complete, call /api/uploads/complete to process (HLS + MP4).</li>
+          <li>Do not store plaintext passwords in the repository.</li>
+        </ul>
+      </section>
+    </section>
+  </main>
+
+  <script src="/admin/main.js"></script>
+</body>
+</html>
